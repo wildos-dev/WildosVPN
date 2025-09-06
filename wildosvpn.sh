@@ -1230,28 +1230,102 @@ admin_management() {
     esac
 }
 
-# Главная функция выбора команды
-main() {
-    if [ $# -eq 0 ]; then
+# Интерактивное меню для выбора команды
+show_interactive_menu() {
+    while true; do
+        echo ""
         colorized_echo blue "=============================================="
         colorized_echo blue "          WildosVPN Management Script         "
         colorized_echo blue "=============================================="
         echo "Доступные команды:"
-        echo "  install       - Установить WildosVPN"
-        echo "  start         - Запустить сервисы"
-        echo "  stop          - Остановить сервисы"
-        echo "  restart       - Перезапустить сервисы"
-        echo "  status        - Показать статус сервисов"
-        echo "  logs          - Показать логи"
-        echo "  backup        - Создать резервную копию"
-        echo "  update        - Обновить WildosVPN"
-        echo "  admin         - Управление администраторами"
-        echo "  uninstall     - Удалить WildosVPN"
-        echo "  script-update - Обновить этот скрипт"
+        echo "  1. install       - Установить WildosVPN"
+        echo "  2. start         - Запустить сервисы"
+        echo "  3. stop          - Остановить сервисы"
+        echo "  4. restart       - Перезапустить сервисы"
+        echo "  5. status        - Показать статус сервисов"
+        echo "  6. logs          - Показать логи"
+        echo "  7. backup        - Создать резервную копию"
+        echo "  8. update        - Обновить WildosVPN"
+        echo "  9. admin         - Управление администраторами"
+        echo " 10. uninstall     - Удалить WildosVPN"
+        echo " 11. script-update - Обновить этот скрипт"
+        echo "  0. exit          - Выход"
         echo ""
-        echo "Использование: wildosvpn <команда>"
         colorized_echo blue "=============================================="
-        exit 0
+        echo ""
+        read -p "Выберите команду (0-11 или название): " choice
+        
+        case "$choice" in
+            "1"|"install")
+                check_running_as_root
+                run_installation
+                ;;
+            "2"|"start")
+                check_running_as_root
+                start_services
+                ;;
+            "3"|"stop")
+                check_running_as_root
+                stop_services
+                ;;
+            "4"|"restart")
+                check_running_as_root
+                restart_services
+                ;;
+            "5"|"status")
+                show_status
+                ;;
+            "6"|"logs")
+                show_logs
+                ;;
+            "7"|"backup")
+                check_running_as_root
+                create_backup
+                ;;
+            "8"|"update")
+                check_running_as_root
+                update_wildosvpn
+                ;;
+            "9"|"admin")
+                check_running_as_root
+                admin_management
+                ;;
+            "10"|"uninstall")
+                check_running_as_root
+                uninstall_wildosvpn
+                ;;
+            "11"|"script-update")
+                check_running_as_root
+                install_wildosvpn_script
+                ;;
+            "0"|"exit"|"quit"|"q")
+                colorized_echo green "До свидания!"
+                exit 0
+                ;;
+            "")
+                # Пустой ввод - продолжаем цикл
+                continue
+                ;;
+            *)
+                colorized_echo red "Неизвестная команда: $choice"
+                colorized_echo yellow "Попробуйте снова или введите 0 для выхода"
+                ;;
+        esac
+        
+        # После выполнения команды спрашиваем, продолжить ли
+        echo ""
+        read -p "Нажмите Enter для возврата в меню или введите 'exit' для выхода: " continue_choice
+        if [[ "$continue_choice" =~ ^(exit|quit|q)$ ]]; then
+            colorized_echo green "До свидания!"
+            exit 0
+        fi
+    done
+}
+
+# Главная функция выбора команды
+main() {
+    if [ $# -eq 0 ]; then
+        show_interactive_menu
     fi
     
     case "$1" in
