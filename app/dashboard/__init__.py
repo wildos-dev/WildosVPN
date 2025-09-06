@@ -37,18 +37,26 @@ def run_dev():
 
 def run_build():
     if not build_dir.is_dir():
-        build()
+        print("Dashboard build directory not found, creating empty directory")
+        build_dir.mkdir(parents=True, exist_ok=True)
+        # Create a simple index.html if build doesn't exist
+        (build_dir / "index.html").write_text(
+            "<html><body><h1>Dashboard not available</h1></body></html>"
+        )
 
+    print("Using existing dashboard build")
     app.mount(
         DASHBOARD_PATH,
         StaticFiles(directory=build_dir, html=True),
         name="dashboard"
     )
-    app.mount(
-        '/statics/',
-        StaticFiles(directory=statics_dir, html=True),
-        name="statics"
-    )
+
+    if statics_dir.is_dir():
+        app.mount(
+            '/statics/',
+            StaticFiles(directory=statics_dir, html=True),
+            name="statics"
+        )
 
 
 @app.on_event("startup")
