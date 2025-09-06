@@ -1126,6 +1126,45 @@ update_wildosvpn() {
     # Скачивание обновлений
     download_project
     
+    # Проверка и создание .env файла если отсутствует
+    if [ ! -f "$ENV_FILE" ]; then
+        colorized_echo yellow ".env файл не найден. Создание минимальной конфигурации..."
+        
+        # Генерация JWT секрета
+        JWT_SECRET=$(openssl rand -hex 32 2>/dev/null || tr -dc A-Za-z0-9 </dev/urandom | head -c 64)
+        
+        cat > "$ENV_FILE" << EOF
+# Минимальная конфигурация WildosVPN для обновления
+SQLALCHEMY_DATABASE_URL="sqlite:////var/lib/wildosvpn/db.sqlite3"
+
+# Настройки Uvicorn для работы с Caddy через Unix Socket
+UVICORN_UDS=/var/lib/wildosvpn/wildosvpn.socket
+
+# Настройки визуального мастера инбаундов
+ENABLE_INBOUND_WIZARD=true
+INBOUND_TEMPLATES_DIRECTORY=templates
+CUSTOM_TEMPLATES_DIRECTORY=/var/lib/wildosvpn/templates/
+
+# Настройки Xray
+XRAY_EXECUTABLE_PATH="/usr/local/bin/xray"
+XRAY_ASSETS_PATH="/usr/local/share/xray"
+
+# Настройки JWT токена
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440
+JWT_SECRET="$JWT_SECRET"
+
+# Настройки журналирования
+UVICORN_LOG_LEVEL="info"
+
+# Дополнительные настройки
+DOCS=true
+DEBUG=false
+EOF
+        
+        colorized_echo green "Минимальный .env файл создан"
+        colorized_echo yellow "ВНИМАНИЕ: Пожалуйста, проверьте и настройте конфигурацию в $ENV_FILE после обновления"
+    fi
+    
     # Проверка наличия Node.js и пересборка фронтенда
     if [ -d "$APP_DIR/app/dashboard" ] && [ -f "$APP_DIR/app/dashboard/package.json" ]; then
         echo ""
