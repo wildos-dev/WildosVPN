@@ -658,11 +658,11 @@ install_nodejs() {
     
     if [[ "$OS" == "Ubuntu"* ]] || [[ "$OS" == "Debian"* ]]; then
         # Добавление официального репозитория NodeSource
-        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
         $PKG_MANAGER install -y nodejs
     elif [[ "$OS" == "CentOS"* ]] || [[ "$OS" == "AlmaLinux"* ]]; then
         # Включение EPEL репозитория и установка из NodeSource
-        curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
+        curl -fsSL https://rpm.nodesource.com/setup_lts.x | bash -
         $PKG_MANAGER install -y nodejs
     elif [ "$OS" == "Fedora"* ]; then
         $PKG_MANAGER install -y nodejs npm
