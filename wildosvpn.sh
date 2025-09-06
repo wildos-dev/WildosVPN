@@ -24,6 +24,7 @@ ENABLE_BACKUP_SERVICE=false
 USE_CUSTOM_ADMIN=false
 USE_MYSQL=false
 USE_TELEGRAM_BOT=false
+SKIP_FRONTEND_BUILD=false
 
 # Цветной вывод
 colorized_echo() {
@@ -315,6 +316,16 @@ setup_additional_options() {
     colorized_echo blue "=============================================="
     
     echo "Выберите дополнительные опции (y/n):"
+    
+    echo ""
+    read -p "Выполнить сборку фронтенда? (y/n) [по умолчанию: y]: " build_frontend_choice
+    if [[ "$build_frontend_choice" =~ ^[Nn]$ ]]; then
+        SKIP_FRONTEND_BUILD=true
+        colorized_echo yellow "Сборка фронтенда будет пропущена"
+    else
+        SKIP_FRONTEND_BUILD=false
+        colorized_echo green "Фронтенд будет собран автоматически"
+    fi
     
     echo ""
     read -p "Настроить автоматические резервные копии через Telegram? (y/n): " backup_choice
@@ -640,6 +651,12 @@ download_project() {
 
 # Установка Node.js для сборки фронтенда
 install_nodejs() {
+    # Пропускаем установку Node.js если сборка фронтенда отключена
+    if [[ "$SKIP_FRONTEND_BUILD" == true ]]; then
+        colorized_echo yellow "Установка Node.js пропущена (сборка фронтенда отключена)"
+        return 0
+    fi
+    
     colorized_echo blue "Проверка наличия Node.js для сборки фронтенда"
     
     # Проверяем версию Node.js
@@ -689,6 +706,14 @@ install_nodejs() {
 
 # Сборка фронтенда
 build_frontend() {
+    # Проверка флага пропуска сборки фронтенда
+    if [[ "$SKIP_FRONTEND_BUILD" == true ]]; then
+        colorized_echo yellow "=============================================="
+        colorized_echo yellow "      Сборка фронтенда пропущена             "
+        colorized_echo yellow "=============================================="
+        return 0
+    fi
+    
     colorized_echo blue "=============================================="
     colorized_echo blue "         Сборка фронтенда WildosVPN           "
     colorized_echo blue "=============================================="
@@ -908,7 +933,7 @@ run_installation() {
     colorized_echo cyan "База данных: $([ "$USE_MYSQL" == true ] && echo "MySQL" || echo "SQLite")"
     colorized_echo cyan "Резервные копии: $([ "$ENABLE_BACKUP_SERVICE" == true ] && echo "включены" || echo "отключены")"
     colorized_echo cyan "Telegram бот: $([ "$USE_TELEGRAM_BOT" == true ] && echo "включен" || echo "отключен")"
-    colorized_echo cyan "Сборка фронтенда: будет выполнена автоматически"
+    colorized_echo cyan "Сборка фронтенда: $([ "$SKIP_FRONTEND_BUILD" == true ] && echo "пропущена" || echo "будет выполнена")"
     colorized_echo blue "=============================================="
     
     read -p "Продолжить установку? (y/n): " confirm_install
@@ -1103,9 +1128,16 @@ update_wildosvpn() {
     
     # Проверка наличия Node.js и пересборка фронтенда
     if [ -d "$APP_DIR/app/dashboard" ] && [ -f "$APP_DIR/app/dashboard/package.json" ]; then
-        colorized_echo blue "Обнаружен фронтенд, выполняется пересборка..."
-        install_nodejs
-        build_frontend
+        echo ""
+        read -p "Пересобрать фронтенд при обновлении? (y/n) [по умолчанию: y]: " rebuild_frontend_choice
+        if [[ ! "$rebuild_frontend_choice" =~ ^[Nn]$ ]]; then
+            colorized_echo blue "Обнаружен фронтенд, выполняется пересборка..."
+            SKIP_FRONTEND_BUILD=false
+            install_nodejs
+            build_frontend
+        else
+            colorized_echo yellow "Сборка фронтенда пропущена по выбору пользователя"
+        fi
     else
         colorized_echo yellow "Фронтенд не обнаружен, пропускаем сборку"
     fi
