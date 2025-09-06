@@ -1,5 +1,5 @@
 import os
-from decouple import config as decouple_config
+from python_decouple import config as decouple_config
 
 def config(key, default=None, cast=None):
     """Полная замена python-decouple с поддержкой всех функций"""
