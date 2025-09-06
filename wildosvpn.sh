@@ -1123,24 +1123,33 @@ update_wildosvpn() {
     # Остановка сервисов
     $COMPOSE down
     
-    # Сохранение существующего .env файла
+    # Сохранение существующего .env файла или извлечение из контейнера
     if [ -f "$ENV_FILE" ]; then
         colorized_echo blue "Сохранение существующей конфигурации .env"
-        cp "$ENV_FILE" "$ENV_FILE.backup.$(date +%Y%m%d_%H%M%S)"
         mv "$ENV_FILE" "/tmp/.env.wildosvpn.tmp"
+    elif $COMPOSE ps wildosvpn | grep -q "Up"; then
+        colorized_echo blue "Извлечение конфигурации из запущенного контейнера"
+        $COMPOSE exec -T wildosvpn env | grep -E "^(SQLALCHEMY_DATABASE_URL|UVICORN_|XRAY_|JWT_|TELEGRAM_|ENABLE_|CUSTOM_|DOCS|DEBUG)" > "/tmp/.env.wildosvpn.tmp" 2>/dev/null || true
+        if [ ! -s "/tmp/.env.wildosvpn.tmp" ]; then
+            colorized_echo red "ОШИБКА: Не удалось извлечь конфигурацию из контейнера"
+            exit 1
+        fi
+        colorized_echo green "Конфигурация извлечена из контейнера"
+    else
+        colorized_echo red "ОШИБКА: .env файл не найден и контейнер не запущен"
+        colorized_echo yellow "Запустите сервис или создайте .env файл вручную"
+        exit 1
     fi
     
     # Скачивание обновлений
     download_project
     
-    # Восстановление существующего .env файла
+    # Восстановление конфигурации
     if [ -f "/tmp/.env.wildosvpn.tmp" ]; then
-        colorized_echo green "Восстановление существующей конфигурации"
+        colorized_echo green "Восстановление конфигурации"
         mv "/tmp/.env.wildosvpn.tmp" "$ENV_FILE"
     else
-        colorized_echo red "ОШИБКА: Не найден существующий .env файл!"
-        colorized_echo red "Обновление не может продолжаться без конфигурации"
-        colorized_echo yellow "Восстановите .env файл вручную или используйте 'install' для переустановки"
+        colorized_echo red "ОШИБКА: Конфигурация не была сохранена"
         exit 1
     fi
     
