@@ -474,6 +474,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      no_cache: true
+      pull: true
     restart: always
     env_file: .env
     network_mode: host
@@ -1006,11 +1008,17 @@ run_installation() {
         exit 1
     fi
     
-    # Загрузка образов
-    colorized_echo blue "Загрузка Docker образов..."
-    $COMPOSE pull
+    # Принудительная очистка старых образов
+    colorized_echo blue "Очистка старых Docker образов..."
+    docker image prune -f 2>/dev/null || true
     
-    # Запуск
+    # Загрузка образов (только для внешних образов как Caddy)
+    colorized_echo blue "Загрузка внешних Docker образов..."
+    $COMPOSE pull caddy
+    
+    # Принудительная пересборка и запуск
+    colorized_echo blue "Принудительная пересборка и запуск..."
+    $COMPOSE up -d --build --force-recreate --no-deps wildosvpn
     $COMPOSE up -d
     
     # Проверка статуса
@@ -1423,8 +1431,14 @@ update_wildosvpn() {
         colorized_echo yellow "Фронтенд не обнаружен, пропускаем сборку"
     fi
     
-    # Запуск обновленных сервисов
-    $COMPOSE pull
+    # Принудительная очистка старых образов
+    colorized_echo blue "Очистка старых Docker образов..."
+    docker image prune -f 2>/dev/null || true
+    
+    # Запуск обновленных сервисов с принудительной пересборкой
+    colorized_echo blue "Принудительная пересборка обновленного образа..."
+    $COMPOSE pull caddy
+    $COMPOSE up -d --build --force-recreate --no-deps wildosvpn
     $COMPOSE up -d
     
     colorized_echo green "WildosVPN успешно обновлен"
