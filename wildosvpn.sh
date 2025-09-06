@@ -1333,10 +1333,12 @@ update_wildosvpn() {
     cd "$APP_DIR"
     detect_compose
     
-    # Сохранение конфигурации перед обновлением
+    # Сохранение всей конфигурации перед обновлением
     CONFIG_SAVED=false
+    CADDYFILE_SAVED=false
+    COMPOSE_SAVED=false
     
-    # Проверяем существование .env файла на хосте
+    # Сохранение .env файла
     if [ -f "$ENV_FILE" ]; then
         colorized_echo blue "Сохранение существующей конфигурации .env"
         cp "$ENV_FILE" "/tmp/.env.wildosvpn.tmp"
@@ -1354,6 +1356,20 @@ update_wildosvpn() {
         fi
     fi
     
+    # Сохранение Caddyfile
+    if [ -f "$APP_DIR/Caddyfile" ]; then
+        colorized_echo blue "Сохранение существующего Caddyfile"
+        cp "$APP_DIR/Caddyfile" "/tmp/Caddyfile.wildosvpn.tmp"
+        CADDYFILE_SAVED=true
+    fi
+    
+    # Сохранение docker-compose.yml
+    if [ -f "$COMPOSE_FILE" ]; then
+        colorized_echo blue "Сохранение существующего docker-compose.yml"
+        cp "$COMPOSE_FILE" "/tmp/docker-compose.wildosvpn.tmp"
+        COMPOSE_SAVED=true
+    fi
+    
     # Остановка сервисов только после сохранения конфигурации
     colorized_echo blue "Остановка сервисов..."
     $COMPOSE down
@@ -1361,15 +1377,34 @@ update_wildosvpn() {
     # Скачивание обновлений
     download_project
     
-    # Восстановление конфигурации
+    # Восстановление всех конфигурационных файлов
     if [ "$CONFIG_SAVED" = true ] && [ -f "/tmp/.env.wildosvpn.tmp" ]; then
-        colorized_echo green "Восстановление конфигурации"
+        colorized_echo green "Восстановление конфигурации .env"
         cp "/tmp/.env.wildosvpn.tmp" "$ENV_FILE"
-        # Удаляем временный файл
         rm -f "/tmp/.env.wildosvpn.tmp"
     else
-        colorized_echo red "ОШИБКА: Конфигурация не была сохранена"
+        colorized_echo red "ОШИБКА: Конфигурация .env не была сохранена"
         exit 1
+    fi
+    
+    # Восстановление Caddyfile или создание нового
+    if [ "$CADDYFILE_SAVED" = true ] && [ -f "/tmp/Caddyfile.wildosvpn.tmp" ]; then
+        colorized_echo green "Восстановление существующего Caddyfile"
+        cp "/tmp/Caddyfile.wildosvpn.tmp" "$APP_DIR/Caddyfile"
+        rm -f "/tmp/Caddyfile.wildosvpn.tmp"
+    else
+        colorized_echo yellow "Создание нового Caddyfile"
+        create_caddyfile
+    fi
+    
+    # Восстановление docker-compose.yml или создание нового
+    if [ "$COMPOSE_SAVED" = true ] && [ -f "/tmp/docker-compose.wildosvpn.tmp" ]; then
+        colorized_echo green "Восстановление существующего docker-compose.yml"
+        cp "/tmp/docker-compose.wildosvpn.tmp" "$COMPOSE_FILE"
+        rm -f "/tmp/docker-compose.wildosvpn.tmp"
+    else
+        colorized_echo yellow "Создание нового docker-compose.yml"
+        create_docker_compose_with_caddy
     fi
     
     # Проверка наличия Node.js и пересборка фронтенда
