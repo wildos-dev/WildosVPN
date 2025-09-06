@@ -1181,6 +1181,39 @@ create_full_backup() {
     fi
 }
 
+# Проверка, запущен ли скрипт в Docker окружении
+is_running_in_docker() {
+    [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null
+}
+
+# Получение конфигурации из Docker контейнера
+get_config_from_docker() {
+    colorized_echo blue "Извлечение конфигурации из Docker контейнера..."
+    
+    # Проверяем статус контейнера
+    if ! $COMPOSE ps wildosvpn >/dev/null 2>&1; then
+        colorized_echo yellow "Контейнер wildosvpn не найден, попробуем получить конфигурацию из томов"
+        return 1
+    fi
+    
+    # Попытка извлечь .env файл из контейнера
+    if $COMPOSE cp wildosvpn:.env "/tmp/.env.wildosvpn.tmp" 2>/dev/null; then
+        colorized_echo green "Конфигурация .env извлечена из контейнера"
+        return 0
+    fi
+    
+    # Если файл .env недоступен, попробуем получить переменные окружения
+    if $COMPOSE exec -T wildosvpn printenv | grep -E "^(SQLALCHEMY_DATABASE_URL|UVICORN_|XRAY_|JWT_|TELEGRAM_|ENABLE_|CUSTOM_|DOCS|DEBUG|SUDO_USERNAME|SUDO_PASSWORD)=" > "/tmp/.env.wildosvpn.tmp" 2>/dev/null; then
+        if [ -s "/tmp/.env.wildosvpn.tmp" ]; then
+            colorized_echo green "Конфигурация извлечена из переменных окружения контейнера"
+            return 0
+        fi
+    fi
+    
+    colorized_echo red "Не удалось извлечь конфигурацию из контейнера"
+    return 1
+}
+
 # Функция обновления WildosVPN
 update_wildosvpn() {
     if ! is_wildosvpn_installed; then
@@ -1191,39 +1224,46 @@ update_wildosvpn() {
     colorized_echo blue "Обновление WildosVPN..."
     
     # Создание резервной копии перед обновлением
+    colorized_echo blue "Создание резервной копии WildosVPN..."
     create_full_backup
     
     cd "$APP_DIR"
     detect_compose
     
-    # Остановка сервисов
-    $COMPOSE down
+    # Сохранение конфигурации перед обновлением
+    CONFIG_SAVED=false
     
-    # Сохранение существующего .env файла или извлечение из контейнера
+    # Проверяем существование .env файла на хосте
     if [ -f "$ENV_FILE" ]; then
         colorized_echo blue "Сохранение существующей конфигурации .env"
-        mv "$ENV_FILE" "/tmp/.env.wildosvpn.tmp"
-    elif $COMPOSE ps wildosvpn | grep -q "Up"; then
-        colorized_echo blue "Извлечение конфигурации из запущенного контейнера"
-        $COMPOSE exec -T wildosvpn env | grep -E "^(SQLALCHEMY_DATABASE_URL|UVICORN_|XRAY_|JWT_|TELEGRAM_|ENABLE_|CUSTOM_|DOCS|DEBUG)" > "/tmp/.env.wildosvpn.tmp" 2>/dev/null || true
-        if [ ! -s "/tmp/.env.wildosvpn.tmp" ]; then
-            colorized_echo red "ОШИБКА: Не удалось извлечь конфигурацию из контейнера"
+        cp "$ENV_FILE" "/tmp/.env.wildosvpn.tmp"
+        CONFIG_SAVED=true
+    else
+        colorized_echo yellow "env file $ENV_FILE not found: stat $ENV_FILE: no such file or directory"
+        
+        # Попытка получить конфигурацию из запущенного контейнера
+        if get_config_from_docker; then
+            CONFIG_SAVED=true
+        else
+            colorized_echo red "ОШИБКА: Не удалось получить конфигурацию"
+            colorized_echo yellow "Проверьте, что контейнер запущен или .env файл существует"
             exit 1
         fi
-        colorized_echo green "Конфигурация извлечена из контейнера"
-    else
-        colorized_echo red "ОШИБКА: .env файл не найден и контейнер не запущен"
-        colorized_echo yellow "Запустите сервис или создайте .env файл вручную"
-        exit 1
     fi
+    
+    # Остановка сервисов только после сохранения конфигурации
+    colorized_echo blue "Остановка сервисов..."
+    $COMPOSE down
     
     # Скачивание обновлений
     download_project
     
     # Восстановление конфигурации
-    if [ -f "/tmp/.env.wildosvpn.tmp" ]; then
+    if [ "$CONFIG_SAVED" = true ] && [ -f "/tmp/.env.wildosvpn.tmp" ]; then
         colorized_echo green "Восстановление конфигурации"
-        mv "/tmp/.env.wildosvpn.tmp" "$ENV_FILE"
+        cp "/tmp/.env.wildosvpn.tmp" "$ENV_FILE"
+        # Удаляем временный файл
+        rm -f "/tmp/.env.wildosvpn.tmp"
     else
         colorized_echo red "ОШИБКА: Конфигурация не была сохранена"
         exit 1
