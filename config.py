@@ -1,7 +1,21 @@
-from decouple import config
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+def config(key, default=None, cast=None):
+    """Alternative config function to replace python-decouple"""
+    value = os.getenv(key, default)
+    if cast and value is not None:
+        if cast == bool:
+            return value.lower() in ('true', '1', 'yes', 'on')
+        elif cast == int:
+            return int(value)
+        elif cast == float:
+            return float(value)
+        elif callable(cast):
+            return cast(value)
+    return value
 
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL", default="sqlite:///db.sqlite3")
