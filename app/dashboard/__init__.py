@@ -51,6 +51,15 @@ def run_build():
         name="dashboard"
     )
 
+    # Mount assets directory
+    assets_dir = build_dir / 'assets'
+    if assets_dir.is_dir():
+        app.mount(
+            '/assets/',
+            StaticFiles(directory=assets_dir),
+            name="assets"
+        )
+
     if statics_dir.is_dir():
         app.mount(
             '/statics/',
