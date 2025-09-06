@@ -1083,6 +1083,14 @@ show_logs() {
     
     cd "$APP_DIR"
     detect_compose
+    
+    # Проверяем наличие контейнеров
+    if ! $COMPOSE ps >/dev/null 2>&1; then
+        colorized_echo red "Контейнеры WildosVPN не найдены. Проверьте установку."
+        exit 1
+    fi
+    
+    colorized_echo blue "Показ логов WildosVPN (нажмите Ctrl+C для выхода)..."
     $COMPOSE logs -f --tail=100
 }
 
@@ -1095,7 +1103,16 @@ show_status() {
     
     cd "$APP_DIR"
     detect_compose
-    $COMPOSE ps
+    
+    colorized_echo blue "Статус контейнеров WildosVPN:"
+    if $COMPOSE ps 2>/dev/null; then
+        echo ""
+        colorized_echo blue "Дисковое пространство:"
+        df -h "$DATA_DIR" 2>/dev/null || echo "Ошибка получения информации о диске"
+    else
+        colorized_echo red "Ошибка получения статуса контейнеров"
+        exit 1
+    fi
 }
 
 # Функция создания резервной копии конфигурации (автоматический бекап)
@@ -1350,6 +1367,15 @@ admin_management() {
         exit 1
     fi
     
+    cd "$APP_DIR"
+    detect_compose
+    
+    # Проверяем, что контейнер запущен
+    if ! $COMPOSE ps wildosvpn | grep -q "Up"; then
+        colorized_echo red "Контейнер WildosVPN не запущен. Запустите его командой: wildosvpn start"
+        exit 1
+    fi
+    
     colorized_echo blue "Управление администратором WildosVPN"
     echo "1. Изменить пароль администратора"
     echo "2. Создать нового администратора"
@@ -1362,25 +1388,27 @@ admin_management() {
             read -s -p "Введите новый пароль: " password
             echo
             
-            cd "$APP_DIR"
-            detect_compose
-            $COMPOSE exec wildosvpn wildosvpn admin update --username "$username" --password "$password"
-            colorized_echo green "Пароль администратора обновлен"
+            if $COMPOSE exec wildosvpn wildosvpn admin update --username "$username" --password "$password"; then
+                colorized_echo green "Пароль администратора обновлен"
+            else
+                colorized_echo red "Ошибка при обновлении пароля администратора"
+            fi
             ;;
         2)
             read -p "Введите имя нового администратора: " username
             read -s -p "Введите пароль: " password
             echo
             
-            cd "$APP_DIR"
-            detect_compose
-            $COMPOSE exec wildosvpn wildosvpn admin create --username "$username" --password "$password" --sudo
-            colorized_echo green "Новый администратор создан"
+            if $COMPOSE exec wildosvpn wildosvpn admin create --username "$username" --password "$password" --sudo; then
+                colorized_echo green "Новый администратор создан"
+            else
+                colorized_echo red "Ошибка при создании администратора"
+            fi
             ;;
         3)
-            cd "$APP_DIR"
-            detect_compose
-            $COMPOSE exec wildosvpn wildosvpn admin list
+            if ! $COMPOSE exec wildosvpn wildosvpn admin list; then
+                colorized_echo red "Ошибка при получении списка администраторов"
+            fi
             ;;
         *)
             colorized_echo red "Неверный выбор"
