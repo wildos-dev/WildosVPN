@@ -1,0 +1,95 @@
+{
+  "id": "trojan_grpc_tls",
+  "name": "Trojan gRPC + TLS",
+  "description": "Trojan через gRPC с TLS - универсальное решение",
+  "protocol": "trojan",
+  "transport": "grpc",
+  "security": "tls",
+  "category": "trojan",
+  "complexity": "advanced",
+  "cdn_support": true,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["grpc", "trojan", "tls", "universal", "h2"],
+  "icon": "🔒",
+  "base_config": {
+    "protocol": "trojan",
+    "settings": {
+      "clients": [
+        {
+          "password": "",
+          "level": 0
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "grpc",
+      "security": "tls",
+      "grpcSettings": {
+        "serviceName": "TrojanService",
+        "multiMode": false
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "alpn": ["h2"],
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.grpcSettings.serviceName",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.password"],
+  "editable_fields": [
+    "clients.0.level",
+    "streamSettings.grpcSettings.serviceName",
+    "streamSettings.grpcSettings.multiMode",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.tlsSettings.allowInsecure",
+    "streamSettings.grpcSettings.authority",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.password": "Пароль для подключения Trojan",
+    "streamSettings.grpcSettings.serviceName": "Имя gRPC сервиса (например: TrojanService)",
+    "streamSettings.grpcSettings.multiMode": "Режим множественных потоков gRPC",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу"
+  },
+  "restrictions": [
+    "Требует HTTP/2 поддержку",
+    "Требует валидный SSL сертификат",
+    "serviceName должен быть уникальным",
+    "Отличная совместимость с различными сетями",
+    "Хорошая маскировка под обычный gRPC трафик"
+  ],
+  "grpc_config": {
+    "recommended_service_names": ["TrojanService", "SecureService", "AuthService", "ApiService"],
+    "http2_required": true,
+    "alpn_required": ["h2"],
+    "multimode_optional": true
+  }
+}

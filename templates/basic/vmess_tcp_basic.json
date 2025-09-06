@@ -1,0 +1,62 @@
+{
+  "id": "vmess_tcp_basic",
+  "name": "VMess TCP Basic",
+  "description": "Базовая конфигурация VMess через TCP без шифрования",
+  "protocol": "vmess",
+  "transport": "tcp",
+  "security": "none",
+  "category": "basic",
+  "complexity": "easy",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 10001,
+  "tags": ["basic", "vmess", "tcp", "simple"],
+  "icon": "📡",
+  "base_config": {
+    "protocol": "vmess",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "alterId": 0
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "tcpSettings": {
+        "header": {
+          "type": "none"
+        }
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": ["tag", "port"],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.alterId",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tcpSettings.header.type",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.alterId": "Дополнительный ID (рекомендуется 0)",
+    "sniffing.enabled": "Включить анализ трафика",
+    "sniffing.destOverride": "Протоколы для анализа"
+  },
+  "restrictions": [
+    "Не поддерживает TLS шифрование",
+    "Подходит только для внутренних сетей",
+    "Не рекомендуется для продакшена"
+  ]
+}

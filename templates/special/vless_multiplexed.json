@@ -1,0 +1,116 @@
+{
+  "id": "vless_multiplexed",
+  "name": "VLESS Multiplexed",
+  "description": "VLESS TCP с мультиплексированием для множественных соединений",
+  "protocol": "vless",
+  "transport": "tcp",
+  "security": "tls",
+  "category": "vless",
+  "complexity": "advanced",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["multiplex", "vless", "tcp", "performance", "special"],
+  "icon": "⚡",
+  "base_config": {
+    "protocol": "vless",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "flow": ""
+        }
+      ],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "tls",
+      "tcpSettings": {
+        "header": {
+          "type": "none"
+        }
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      },
+      "sockopt": {
+        "tcpKeepAliveInterval": 30,
+        "tcpKeepAliveIdle": 300,
+        "mark": 255
+      }
+    },
+    "mux": {
+      "enabled": true,
+      "concurrency": 16,
+      "xudpConcurrency": 16,
+      "xudpProxyUDP443": "reject"
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.flow",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "mux.enabled",
+    "mux.concurrency",
+    "mux.xudpConcurrency",
+    "mux.xudpProxyUDP443",
+    "streamSettings.sockopt.tcpKeepAliveInterval",
+    "streamSettings.sockopt.tcpKeepAliveIdle",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.sockopt.mark",
+    "streamSettings.sockopt.tcpFastOpen",
+    "streamSettings.sockopt.tproxy",
+    "streamSettings.tlsSettings.alpn"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.flow": "XTLS flow (оставьте пустым для обычного мультиплексирования)",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу",
+    "mux.enabled": "Включить мультиплексирование",
+    "mux.concurrency": "Количество одновременных TCP соединений (рекомендуется 8-16)",
+    "mux.xudpConcurrency": "Количество одновременных UDP соединений",
+    "mux.xudpProxyUDP443": "Проксирование UDP 443 (reject/allow)",
+    "streamSettings.sockopt.tcpKeepAliveInterval": "Интервал TCP Keep-Alive (секунды)",
+    "streamSettings.sockopt.tcpKeepAliveIdle": "Время ожидания TCP Keep-Alive (секунды)"
+  },
+  "restrictions": [
+    "Повышает производительность при множественных соединениях",
+    "Снижает количество TCP handshake операций",
+    "Может увеличить задержку для одиночных соединений",
+    "flow должен быть пустым при включенном мультиплексировании",
+    "Оптимально для высоконагруженных серверов"
+  ],
+  "multiplex_config": {
+    "optimal_concurrency": 16,
+    "recommended_udp_concurrency": 16,
+    "keepalive_optimized": true,
+    "performance_mode": "high_throughput"
+  }
+}

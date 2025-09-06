@@ -1,0 +1,109 @@
+{
+  "id": "vless_httpupgrade_tls",
+  "name": "VLESS HTTPUpgrade + TLS",
+  "description": "VLESS HTTPUpgrade с TLS - современный транспорт нового поколения",
+  "protocol": "vless",
+  "transport": "httpupgrade",
+  "security": "tls",
+  "category": "vless",
+  "complexity": "medium",
+  "cdn_support": true,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["httpupgrade", "vless", "tls", "modern", "http2", "h3"],
+  "icon": "⚡",
+  "base_config": {
+    "protocol": "vless",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "flow": ""
+        }
+      ],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "httpupgrade",
+      "security": "tls",
+      "httpupgradeSettings": {
+        "path": "/upgrade",
+        "host": "example.com",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "alpn": ["h2", "http/1.1"],
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.httpupgradeSettings.path",
+    "streamSettings.httpupgradeSettings.host",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.flow",
+    "streamSettings.httpupgradeSettings.path",
+    "streamSettings.httpupgradeSettings.host",
+    "streamSettings.httpupgradeSettings.headers.User-Agent",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.tlsSettings.allowInsecure",
+    "streamSettings.httpupgradeSettings.headers",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.flow": "XTLS flow (оставьте пустым для HTTPUpgrade)",
+    "streamSettings.httpupgradeSettings.path": "HTTP путь для upgrade (например: /upgrade, /api/v2)",
+    "streamSettings.httpupgradeSettings.host": "Host заголовок",
+    "streamSettings.httpupgradeSettings.headers.User-Agent": "User-Agent для маскировки под браузер",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS (должно совпадать с Host)",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу"
+  },
+  "restrictions": [
+    "Требует современную версию Xray (1.8.0+)",
+    "flow должен быть пустым для HTTPUpgrade",
+    "Отличная производительность и совместимость",
+    "Поддерживает HTTP/2 и будущий HTTP/3",
+    "Совместим с большинством CDN",
+    "Низкая задержка благодаря современному протоколу"
+  ],
+  "httpupgrade_config": {
+    "recommended_paths": ["/upgrade", "/api/upgrade", "/v2/upgrade", "/modern"],
+    "recommended_user_agents": [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+    ],
+    "modern_protocol": true,
+    "http2_ready": true
+  }
+}

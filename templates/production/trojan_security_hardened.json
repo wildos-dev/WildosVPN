@@ -1,0 +1,177 @@
+{
+  "id": "trojan_security_hardened",
+  "name": "Trojan Security Hardened",
+  "description": "Trojan с усиленной безопасностью для критичных production сред",
+  "protocol": "trojan",
+  "transport": "tcp",
+  "security": "tls",
+  "category": "trojan",
+  "complexity": "expert",
+  "cdn_support": false,
+  "multiplexing": false,
+  "default_port": 443,
+  "tags": ["security", "trojan", "hardened", "production", "enterprise"],
+  "icon": "🔒",
+  "base_config": {
+    "protocol": "trojan",
+    "settings": {
+      "clients": [
+        {
+          "password": "",
+          "level": 0,
+          "email": "admin@example.com"
+        }
+      ],
+      "fallbacks": [
+        {
+          "dest": "8080",
+          "xver": 1
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "tls",
+      "tlsSettings": {
+        "serverName": "example.com",
+        "minVersion": "1.3",
+        "maxVersion": "1.3",
+        "cipherSuites": [
+          "TLS_AES_256_GCM_SHA384",
+          "TLS_CHACHA20_POLY1305_SHA256"
+        ],
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ],
+        "allowInsecure": false,
+        "rejectUnknownSni": true
+      },
+      "sockopt": {
+        "tcpKeepAliveInterval": 30,
+        "tcpKeepAliveIdle": 600,
+        "mark": 255,
+        "tcpFastOpen": false
+      }
+    },
+    "policy": {
+      "levels": {
+        "0": {
+          "handshake": 8,
+          "connIdle": 180,
+          "uplinkOnly": 1,
+          "downlinkOnly": 1,
+          "statsUserUplink": true,
+          "statsUserDownlink": true,
+          "bufferSize": 256
+        }
+      },
+      "system": {
+        "statsInboundUplink": true,
+        "statsInboundDownlink": true
+      }
+    },
+    "log": {
+      "access": "/var/log/xray/trojan-access.log",
+      "error": "/var/log/xray/trojan-error.log",
+      "loglevel": "warning",
+      "dnsLog": false
+    },
+    "stats": {},
+    "api": {
+      "tag": "api",
+      "services": ["HandlerService", "StatsService"]
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"],
+      "metadataOnly": true,
+      "routeOnly": true
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "clients.0.email",
+    "settings.fallbacks.0.dest"
+  ],
+  "auto_gen_fields": ["clients.0.password"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.email",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "streamSettings.tlsSettings.minVersion",
+    "streamSettings.tlsSettings.maxVersion",
+    "streamSettings.tlsSettings.cipherSuites",
+    "streamSettings.tlsSettings.rejectUnknownSni",
+    "settings.fallbacks.0.dest",
+    "policy.levels.0.handshake",
+    "policy.levels.0.connIdle",
+    "policy.levels.0.bufferSize",
+    "log.access",
+    "log.error",
+    "log.loglevel",
+    "streamSettings.sockopt.tcpKeepAliveInterval",
+    "sniffing.metadataOnly",
+    "sniffing.routeOnly"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.cipherSuites",
+    "policy",
+    "log",
+    "stats",
+    "api",
+    "streamSettings.sockopt.mark"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.password": "Пароль для подключения Trojan (сгенерируется автоматически)",
+    "clients.0.email": "Email администратора для идентификации",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "streamSettings.tlsSettings.minVersion": "Минимальная версия TLS (рекомендуется 1.3)",
+    "streamSettings.tlsSettings.maxVersion": "Максимальная версия TLS (рекомендуется 1.3)",
+    "streamSettings.tlsSettings.cipherSuites": "Разрешенные шифры (только самые безопасные)",
+    "streamSettings.tlsSettings.rejectUnknownSni": "Отклонять неизвестные SNI",
+    "settings.fallbacks.0.dest": "Порт fallback веб-сервера",
+    "policy.levels.0.handshake": "Таймаут рукопожатия (секунды)",
+    "policy.levels.0.connIdle": "Таймаут простоя соединения (секунды)",
+    "policy.levels.0.bufferSize": "Размер буфера (KB)",
+    "log.loglevel": "Уровень логирования (warning для безопасности)",
+    "sniffing.metadataOnly": "Использовать только метаданные",
+    "sniffing.routeOnly": "Sniffing только для маршрутизации"
+  },
+  "tls_versions": [
+    "1.2",
+    "1.3"
+  ],
+  "secure_cipher_suites": [
+    "TLS_AES_256_GCM_SHA384",
+    "TLS_CHACHA20_POLY1305_SHA256",
+    "TLS_AES_128_GCM_SHA256"
+  ],
+  "restrictions": [
+    "Только TLS 1.3 для максимальной безопасности",
+    "Ограниченный набор самых безопасных шифров",
+    "Отклонение неизвестных SNI для защиты",
+    "Строгие тайм-ауты для защиты от атак",
+    "Минимальный размер буфера для защиты памяти",
+    "Логирование только предупреждений и ошибок",
+    "Отключен TCP Fast Open для безопасности"
+  ],
+  "security_config": {
+    "tls_version": "1.3_only",
+    "cipher_strength": "maximum",
+    "sni_protection": true,
+    "timing_attack_protection": true,
+    "memory_protection": true,
+    "logging_minimal": true,
+    "enterprise_grade": true
+  }
+}

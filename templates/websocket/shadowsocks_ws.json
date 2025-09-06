@@ -1,0 +1,81 @@
+{
+  "id": "shadowsocks_ws",
+  "name": "Shadowsocks WebSocket",
+  "description": "Shadowsocks через WebSocket транспорт без TLS",
+  "protocol": "shadowsocks",
+  "transport": "ws",
+  "security": "none",
+  "category": "shadowsocks",
+  "complexity": "medium",
+  "cdn_support": false,
+  "multiplexing": false,
+  "default_port": 8080,
+  "tags": ["websocket", "shadowsocks", "experimental"],
+  "icon": "🌓",
+  "base_config": {
+    "protocol": "shadowsocks",
+    "settings": {
+      "method": "chacha20-ietf-poly1305",
+      "password": "",
+      "network": "tcp,udp"
+    },
+    "streamSettings": {
+      "network": "ws",
+      "wsSettings": {
+        "path": "/ss-ws",
+        "headers": {
+          "Host": "localhost"
+        }
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.wsSettings.path"
+  ],
+  "auto_gen_fields": ["settings.password"],
+  "editable_fields": [
+    "settings.method",
+    "settings.network",
+    "streamSettings.wsSettings.path",
+    "streamSettings.wsSettings.headers.Host",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.wsSettings.headers",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "settings.method": "Метод шифрования Shadowsocks",
+    "settings.password": "Пароль для подключения",
+    "settings.network": "Поддерживаемые протоколы (tcp, udp или tcp,udp)",
+    "streamSettings.wsSettings.path": "WebSocket путь (например: /ss-ws, /shadowsocks)",
+    "streamSettings.wsSettings.headers.Host": "Host заголовок для WebSocket"
+  },
+  "method_options": [
+    "aes-128-gcm",
+    "aes-256-gcm", 
+    "chacha20-ietf-poly1305",
+    "xchacha20-ietf-poly1305",
+    "2022-blake3-aes-128-gcm",
+    "2022-blake3-aes-256-gcm",
+    "2022-blake3-chacha20-poly1305"
+  ],
+  "restrictions": [
+    "Экспериментальная функция",
+    "Не поддерживает мультиплексирование",
+    "WebSocket без TLS подходит только для внутренних сетей",
+    "Ограниченная совместимость с клиентами",
+    "UDP поддержка может не работать через WebSocket"
+  ],
+  "websocket_config": {
+    "recommended_paths": ["/ss-ws", "/shadowsocks", "/api/ss", "/ss"],
+    "default_host": "localhost"
+  }
+}

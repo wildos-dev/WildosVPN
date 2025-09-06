@@ -1,0 +1,121 @@
+{
+  "id": "trojan_fallback",
+  "name": "Trojan Fallback",
+  "description": "Trojan с fallback на веб-сервер для максимальной маскировки",
+  "protocol": "trojan",
+  "transport": "tcp",
+  "security": "tls",
+  "category": "trojan",
+  "complexity": "advanced",
+  "cdn_support": false,
+  "multiplexing": false,
+  "default_port": 443,
+  "tags": ["fallback", "trojan", "stealth", "webserver", "special"],
+  "icon": "🔒",
+  "base_config": {
+    "protocol": "trojan",
+    "settings": {
+      "clients": [
+        {
+          "password": "",
+          "level": 0
+        }
+      ],
+      "fallbacks": [
+        {
+          "dest": "8080",
+          "xver": 1
+        },
+        {
+          "path": "/api",
+          "dest": "8081",
+          "xver": 1
+        },
+        {
+          "path": "/ws",
+          "dest": "8082",
+          "xver": 1
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "tls",
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "settings.fallbacks.0.dest"
+  ],
+  "auto_gen_fields": ["clients.0.password"],
+  "editable_fields": [
+    "clients.0.level",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "settings.fallbacks.0.dest",
+    "settings.fallbacks.0.xver",
+    "settings.fallbacks.1.path",
+    "settings.fallbacks.1.dest",
+    "settings.fallbacks.1.xver",
+    "settings.fallbacks.2.path",
+    "settings.fallbacks.2.dest",
+    "settings.fallbacks.2.xver",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.sockopt",
+    "settings.fallbacks"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.password": "Пароль для подключения Trojan",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу",
+    "settings.fallbacks.0.dest": "Порт основного веб-сервера (например: 8080)",
+    "settings.fallbacks.0.xver": "Передача реального IP (0=нет, 1=да)",
+    "settings.fallbacks.1.path": "Путь для API fallback (например: /api)",
+    "settings.fallbacks.1.dest": "Порт для API сервера",
+    "settings.fallbacks.2.path": "Путь для WebSocket fallback (например: /ws)",
+    "settings.fallbacks.2.dest": "Порт для WebSocket сервера"
+  },
+  "restrictions": [
+    "Требует настройку fallback серверов на указанных портах",
+    "При неправильном пароле Trojan перенаправляет на веб-сервер",
+    "Полная имитация обычного веб-сайта",
+    "Требует дополнительные веб-сервисы (Nginx, Apache)",
+    "Максимальная защита от обнаружения"
+  ],
+  "fallback_config": {
+    "default_webserver_port": 8080,
+    "api_server_port": 8081,
+    "websocket_server_port": 8082,
+    "recommended_paths": {
+      "/api": "API endpoints",
+      "/ws": "WebSocket connections",
+      "/admin": "Admin panel",
+      "/static": "Static files"
+    },
+    "stealth_level": "maximum"
+  }
+}

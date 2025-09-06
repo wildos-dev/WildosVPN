@@ -1,0 +1,62 @@
+{
+  "id": "shadowsocks_tcp_basic",
+  "name": "Shadowsocks TCP Basic",
+  "description": "Классическая конфигурация Shadowsocks через TCP",
+  "protocol": "shadowsocks",
+  "transport": "tcp",
+  "security": "none",
+  "category": "basic",
+  "complexity": "easy",
+  "cdn_support": false,
+  "multiplexing": false,
+  "default_port": 8388,
+  "tags": ["basic", "shadowsocks", "tcp", "classic"],
+  "icon": "🌓",
+  "base_config": {
+    "protocol": "shadowsocks",
+    "settings": {
+      "method": "chacha20-ietf-poly1305",
+      "password": "",
+      "network": "tcp,udp"
+    },
+    "streamSettings": {
+      "network": "tcp"
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": ["tag", "port"],
+  "auto_gen_fields": ["settings.password"],
+  "editable_fields": [
+    "settings.method",
+    "settings.network",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "settings.method": "Метод шифрования",
+    "settings.password": "Пароль для подключения",
+    "settings.network": "Поддерживаемые протоколы (tcp, udp или tcp,udp)",
+    "sniffing.enabled": "Включить анализ трафика",
+    "sniffing.destOverride": "Протоколы для анализа"
+  },
+  "method_options": [
+    "aes-128-gcm",
+    "aes-256-gcm", 
+    "chacha20-ietf-poly1305",
+    "xchacha20-ietf-poly1305",
+    "2022-blake3-aes-128-gcm",
+    "2022-blake3-aes-256-gcm",
+    "2022-blake3-chacha20-poly1305"
+  ],
+  "restrictions": [
+    "Не поддерживает мультиплексирование",
+    "Совместим с клиентами Shadowsocks",
+    "UDP поддержка опциональна"
+  ]
+}

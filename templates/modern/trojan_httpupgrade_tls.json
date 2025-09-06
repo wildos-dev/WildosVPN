@@ -1,0 +1,105 @@
+{
+  "id": "trojan_httpupgrade_tls",
+  "name": "Trojan HTTPUpgrade + TLS",
+  "description": "Trojan HTTPUpgrade с TLS - высокая скрытность с современным транспортом",
+  "protocol": "trojan",
+  "transport": "httpupgrade",
+  "security": "tls",
+  "category": "trojan",
+  "complexity": "medium",
+  "cdn_support": true,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["httpupgrade", "trojan", "tls", "modern", "stealth"],
+  "icon": "🔒",
+  "base_config": {
+    "protocol": "trojan",
+    "settings": {
+      "clients": [
+        {
+          "password": "",
+          "level": 0
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "httpupgrade",
+      "security": "tls",
+      "httpupgradeSettings": {
+        "path": "/secure",
+        "host": "example.com",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "alpn": ["h2", "http/1.1"],
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.httpupgradeSettings.path",
+    "streamSettings.httpupgradeSettings.host",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.password"],
+  "editable_fields": [
+    "clients.0.level",
+    "streamSettings.httpupgradeSettings.path",
+    "streamSettings.httpupgradeSettings.host",
+    "streamSettings.httpupgradeSettings.headers.User-Agent",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.tlsSettings.allowInsecure",
+    "streamSettings.httpupgradeSettings.headers",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.password": "Пароль для подключения Trojan",
+    "streamSettings.httpupgradeSettings.path": "HTTP путь для upgrade (например: /secure, /auth)",
+    "streamSettings.httpupgradeSettings.host": "Host заголовок",
+    "streamSettings.httpupgradeSettings.headers.User-Agent": "User-Agent для маскировки под браузер",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS (должно совпадать с Host)",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу"
+  },
+  "restrictions": [
+    "Требует современную версию Xray (1.8.0+)",
+    "Отличная маскировка под обычный HTTPS трафик",
+    "Повышенная защита от DPI анализа",
+    "Поддерживает HTTP/2 для лучшей производительности",
+    "Совместим с большинством CDN",
+    "Низкая задержка благодаря HTTPUpgrade"
+  ],
+  "httpupgrade_config": {
+    "recommended_paths": ["/secure", "/auth", "/login", "/api/secure"],
+    "recommended_user_agents": [
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    ],
+    "stealth_optimized": true,
+    "trojan_compatible": true
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "id": "vless_smart_routing",
+  "name": "VLESS Smart Routing",
+  "description": "VLESS с умной маршрутизацией по доменам и IP адресам",
+  "protocol": "vless",
+  "transport": "tcp",
+  "security": "tls",
+  "category": "vless",
+  "complexity": "advanced",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["routing", "vless", "smart", "geo-ip", "special"],
+  "icon": "⚡",
+  "base_config": {
+    "protocol": "vless",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "flow": ""
+        }
+      ],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "tls",
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "routing": {
+      "domainStrategy": "IPOnDemand",
+      "rules": [
+        {
+          "type": "field",
+          "domain": ["geosite:cn"],
+          "outboundTag": "direct"
+        },
+        {
+          "type": "field",
+          "ip": ["geoip:cn"],
+          "outboundTag": "direct"
+        },
+        {
+          "type": "field",
+          "domain": ["geosite:google", "geosite:youtube", "geosite:facebook"],
+          "outboundTag": "proxy"
+        },
+        {
+          "type": "field",
+          "protocol": ["bittorrent"],
+          "outboundTag": "block"
+        },
+        {
+          "type": "field",
+          "network": "udp",
+          "port": "443",
+          "outboundTag": "block"
+        }
+      ]
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"],
+      "metadataOnly": false
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.flow",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "routing.domainStrategy",
+    "routing.rules.0.domain",
+    "routing.rules.0.outboundTag",
+    "routing.rules.1.ip",
+    "routing.rules.1.outboundTag",
+    "routing.rules.2.domain",
+    "routing.rules.2.outboundTag",
+    "sniffing.enabled",
+    "sniffing.destOverride",
+    "sniffing.metadataOnly"
+  ],
+  "advanced_fields": [
+    "routing.rules",
+    "streamSettings.sockopt",
+    "streamSettings.tlsSettings.alpn"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.flow": "XTLS flow (пустое для обычного TCP)",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу",
+    "routing.domainStrategy": "Стратегия разрешения доменов (AsIs, IPIfNonMatch, IPOnDemand)",
+    "routing.rules.0.domain": "Домены для прямого подключения (например: geosite:cn)",
+    "routing.rules.0.outboundTag": "Тег исходящего соединения для китайских сайтов",
+    "routing.rules.1.ip": "IP адреса для прямого подключения (например: geoip:cn)",
+    "routing.rules.1.outboundTag": "Тег исходящего соединения для китайских IP",
+    "routing.rules.2.domain": "Домены для проксирования (например: geosite:google)",
+    "routing.rules.2.outboundTag": "Тег исходящего соединения для заблокированных сайтов",
+    "sniffing.metadataOnly": "Использовать только метаданные для определения протокола"
+  },
+  "routing_strategies": [
+    "AsIs",
+    "IPIfNonMatch", 
+    "IPOnDemand"
+  ],
+  "geosite_categories": [
+    "geosite:cn",
+    "geosite:google",
+    "geosite:youtube", 
+    "geosite:facebook",
+    "geosite:twitter",
+    "geosite:telegram",
+    "geosite:netflix",
+    "geosite:disney"
+  ],
+  "restrictions": [
+    "Требует geo-данные (geosite.dat, geoip.dat)",
+    "Автоматически направляет китайские сайты напрямую",
+    "Заблокированные сайты идут через прокси",
+    "Блокирует BitTorrent трафик",
+    "Оптимизирует скорость для локальных ресурсов"
+  ],
+  "smart_routing_config": {
+    "geo_files_required": ["geosite.dat", "geoip.dat"],
+    "domestic_direct": true,
+    "foreign_proxy": true,
+    "torrent_block": true,
+    "intelligence_level": "high"
+  }
+}

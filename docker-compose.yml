@@ -1,0 +1,37 @@
+services:
+  wildosvpn:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file: .env
+    network_mode: host
+    volumes:
+      - /var/lib/wildosvpn:/var/lib/wildosvpn
+      # Монтирование шаблонов для визуального мастера инбаундов
+      - ./templates:/opt/wildosvpn/templates:ro
+      # Обеспечение доступа к пользовательским шаблонам
+      - /var/lib/wildosvpn/templates:/var/lib/wildosvpn/templates
+    environment:
+      # Путь к пользовательским шаблонам
+      - CUSTOM_TEMPLATES_DIRECTORY=/var/lib/wildosvpn/templates/
+      # Включение визуального мастера инбаундов
+      - ENABLE_INBOUND_WIZARD=true
+    depends_on:
+      - caddy
+
+  caddy:
+    image: caddy:latest
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/lib/wildosvpn:/var/lib/wildosvpn
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

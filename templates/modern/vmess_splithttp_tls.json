@@ -1,0 +1,114 @@
+{
+  "id": "vmess_splithttp_tls",
+  "name": "VMess SplitHTTP + TLS",
+  "description": "VMess SplitHTTP с TLS - расщепленный HTTP для обхода блокировок",
+  "protocol": "vmess",
+  "transport": "splithttp",
+  "security": "tls",
+  "category": "vmess",
+  "complexity": "medium",
+  "cdn_support": true,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["splithttp", "vmess", "tls", "modern", "bypass", "split"],
+  "icon": "📡",
+  "base_config": {
+    "protocol": "vmess",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "alterId": 0
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "splithttp",
+      "security": "tls",
+      "splithttpSettings": {
+        "path": "/split",
+        "host": "example.com",
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        },
+        "scMaxConcurrentPosts": 10,
+        "scMaxEachPostBytes": "1000000",
+        "scMinPostsIntervalMs": 30
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "alpn": ["h2", "http/1.1"],
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.splithttpSettings.path",
+    "streamSettings.splithttpSettings.host",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.alterId",
+    "streamSettings.splithttpSettings.path",
+    "streamSettings.splithttpSettings.host",
+    "streamSettings.splithttpSettings.headers.User-Agent",
+    "streamSettings.splithttpSettings.scMaxConcurrentPosts",
+    "streamSettings.splithttpSettings.scMaxEachPostBytes",
+    "streamSettings.splithttpSettings.scMinPostsIntervalMs",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.tlsSettings.allowInsecure",
+    "streamSettings.splithttpSettings.headers",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.alterId": "Дополнительный ID (рекомендуется 0)",
+    "streamSettings.splithttpSettings.path": "HTTP путь для SplitHTTP (например: /split, /api/data)",
+    "streamSettings.splithttpSettings.host": "Host заголовок",
+    "streamSettings.splithttpSettings.headers.User-Agent": "User-Agent для маскировки",
+    "streamSettings.splithttpSettings.scMaxConcurrentPosts": "Максимальное количество одновременных POST запросов",
+    "streamSettings.splithttpSettings.scMaxEachPostBytes": "Максимальный размер каждого POST запроса в байтах",
+    "streamSettings.splithttpSettings.scMinPostsIntervalMs": "Минимальный интервал между POST запросами (мс)",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу"
+  },
+  "restrictions": [
+    "Требует новейшую версию Xray (1.8.1+)",
+    "Расщепляет трафик на множество HTTP запросов",
+    "Отлично обходит DPI анализ",
+    "Имитирует обычный веб-трафик",
+    "Совместим с CDN и прокси",
+    "Может создавать повышенную нагрузку на сервер"
+  ],
+  "splithttp_config": {
+    "recommended_paths": ["/split", "/api/data", "/upload", "/stream"],
+    "optimal_concurrent_posts": 10,
+    "optimal_post_size": "1000000",
+    "optimal_interval_ms": 30,
+    "bypass_optimized": true
+  }
+}

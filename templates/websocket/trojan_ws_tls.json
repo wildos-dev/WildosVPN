@@ -1,0 +1,96 @@
+{
+  "id": "trojan_ws_tls",
+  "name": "Trojan WebSocket + TLS",
+  "description": "Trojan через WebSocket с TLS для обхода блокировок",
+  "protocol": "trojan",
+  "transport": "ws",
+  "security": "tls",
+  "category": "trojan",
+  "complexity": "medium",
+  "cdn_support": true,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["websocket", "trojan", "tls", "stealth", "bypass"],
+  "icon": "🔒",
+  "base_config": {
+    "protocol": "trojan",
+    "settings": {
+      "clients": [
+        {
+          "password": "",
+          "level": 0
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "ws",
+      "security": "tls",
+      "wsSettings": {
+        "path": "/trojan",
+        "headers": {
+          "Host": "example.com"
+        }
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.wsSettings.path",
+    "streamSettings.wsSettings.headers.Host",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.password"],
+  "editable_fields": [
+    "clients.0.level",
+    "streamSettings.wsSettings.path",
+    "streamSettings.wsSettings.headers.Host",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.tlsSettings.allowInsecure",
+    "streamSettings.wsSettings.headers",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.password": "Пароль для подключения Trojan",
+    "streamSettings.wsSettings.path": "WebSocket путь (например: /trojan, /api/secure)",
+    "streamSettings.wsSettings.headers.Host": "Host заголовок для WebSocket",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS (должно совпадать с Host)",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу"
+  },
+  "restrictions": [
+    "Требует валидный SSL сертификат",
+    "Host и serverName должны совпадать",
+    "WebSocket путь должен быть уникальным",
+    "Повышенная маскировка под обычный HTTPS трафик",
+    "Отлично обходит DPI фильтрацию"
+  ],
+  "cdn_config": {
+    "cloudflare_compatible": true,
+    "recommended_ports": [443, 8443, 2053, 2083, 2087, 2096],
+    "websocket_paths": ["/trojan", "/secure", "/api/auth", "/login", "/auth"]
+  }
+}

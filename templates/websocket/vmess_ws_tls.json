@@ -1,0 +1,97 @@
+{
+  "id": "vmess_ws_tls",
+  "name": "VMess WebSocket + TLS",
+  "description": "VMess через WebSocket с TLS для работы с CDN",
+  "protocol": "vmess",
+  "transport": "ws",
+  "security": "tls",
+  "category": "vmess",
+  "complexity": "medium",
+  "cdn_support": true,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["websocket", "vmess", "tls", "cdn", "cloudflare"],
+  "icon": "📡",
+  "base_config": {
+    "protocol": "vmess",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "alterId": 0
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "ws",
+      "security": "tls",
+      "wsSettings": {
+        "path": "/ws",
+        "headers": {
+          "Host": "example.com"
+        }
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.wsSettings.path",
+    "streamSettings.wsSettings.headers.Host",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.alterId",
+    "streamSettings.wsSettings.path",
+    "streamSettings.wsSettings.headers.Host",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.tlsSettings.allowInsecure",
+    "streamSettings.wsSettings.headers",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.alterId": "Дополнительный ID (рекомендуется 0)",
+    "streamSettings.wsSettings.path": "WebSocket путь (например: /ws, /api/v1)",
+    "streamSettings.wsSettings.headers.Host": "Host заголовок для WebSocket",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS (должно совпадать с Host)",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу"
+  },
+  "restrictions": [
+    "Требует валидный SSL сертификат",
+    "Host и serverName должны совпадать",
+    "WebSocket путь должен быть уникальным",
+    "Совместим с Cloudflare и другими CDN"
+  ],
+  "cdn_config": {
+    "cloudflare_compatible": true,
+    "recommended_ports": [443, 8443, 2053, 2083, 2087, 2096],
+    "websocket_paths": ["/ws", "/websocket", "/api/ws", "/v2ray", "/vmess"]
+  }
+}

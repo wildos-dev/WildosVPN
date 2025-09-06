@@ -1,0 +1,214 @@
+{
+  "id": "vless_multi_user",
+  "name": "VLESS Multi-User",
+  "description": "VLESS для множественных пользователей с индивидуальной статистикой",
+  "protocol": "vless",
+  "transport": "tcp",
+  "security": "tls",
+  "category": "vless",
+  "complexity": "expert",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["multi-user", "vless", "production", "enterprise", "statistics"],
+  "icon": "⚡",
+  "base_config": {
+    "protocol": "vless",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "flow": "",
+          "email": "user1@example.com"
+        },
+        {
+          "id": "",
+          "level": 1,
+          "flow": "",
+          "email": "user2@example.com"
+        },
+        {
+          "id": "",
+          "level": 2,
+          "flow": "",
+          "email": "admin@example.com"
+        }
+      ],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "tls",
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      },
+      "sockopt": {
+        "tcpKeepAliveInterval": 30,
+        "mark": 255
+      }
+    },
+    "policy": {
+      "levels": {
+        "0": {
+          "handshake": 4,
+          "connIdle": 300,
+          "uplinkOnly": 2,
+          "downlinkOnly": 5,
+          "statsUserUplink": true,
+          "statsUserDownlink": true,
+          "bufferSize": 512
+        },
+        "1": {
+          "handshake": 4,
+          "connIdle": 600,
+          "uplinkOnly": 4,
+          "downlinkOnly": 8,
+          "statsUserUplink": true,
+          "statsUserDownlink": true,
+          "bufferSize": 1024
+        },
+        "2": {
+          "handshake": 8,
+          "connIdle": 1200,
+          "uplinkOnly": 8,
+          "downlinkOnly": 16,
+          "statsUserUplink": true,
+          "statsUserDownlink": true,
+          "bufferSize": 2048
+        }
+      },
+      "system": {
+        "statsInboundUplink": true,
+        "statsInboundDownlink": true,
+        "statsOutboundUplink": true,
+        "statsOutboundDownlink": true
+      }
+    },
+    "stats": {},
+    "api": {
+      "tag": "api",
+      "services": ["HandlerService", "LoggerService", "StatsService"]
+    },
+    "log": {
+      "access": "/var/log/xray/multi-user-access.log",
+      "error": "/var/log/xray/multi-user-error.log",
+      "loglevel": "info"
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"],
+      "metadataOnly": false
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": [
+    "clients.0.id",
+    "clients.1.id", 
+    "clients.2.id"
+  ],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.flow",
+    "clients.0.email",
+    "clients.1.level",
+    "clients.1.flow",
+    "clients.1.email",
+    "clients.2.level",
+    "clients.2.flow",
+    "clients.2.email",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "policy.levels.0.handshake",
+    "policy.levels.0.connIdle",
+    "policy.levels.0.bufferSize",
+    "policy.levels.1.handshake",
+    "policy.levels.1.connIdle",
+    "policy.levels.1.bufferSize",
+    "policy.levels.2.handshake",
+    "policy.levels.2.connIdle",
+    "policy.levels.2.bufferSize",
+    "log.access",
+    "log.error",
+    "log.loglevel",
+    "streamSettings.sockopt.tcpKeepAliveInterval",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "policy",
+    "stats",
+    "api",
+    "log",
+    "streamSettings.sockopt.mark"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень первого пользователя (базовый)",
+    "clients.0.flow": "XTLS flow для первого пользователя",
+    "clients.0.email": "Email первого пользователя",
+    "clients.1.level": "Уровень второго пользователя (премиум)",
+    "clients.1.flow": "XTLS flow для второго пользователя",
+    "clients.1.email": "Email второго пользователя",
+    "clients.2.level": "Уровень третьего пользователя (админ)",
+    "clients.2.flow": "XTLS flow для третьего пользователя",
+    "clients.2.email": "Email третьего пользователя (админ)",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "policy.levels.0.handshake": "Таймаут рукопожатия для уровня 0 (секунды)",
+    "policy.levels.0.connIdle": "Таймаут простоя для уровня 0 (секунды)",
+    "policy.levels.0.bufferSize": "Размер буфера для уровня 0 (KB)",
+    "policy.levels.1.handshake": "Таймаут рукопожатия для уровня 1 (секунды)",
+    "policy.levels.1.connIdle": "Таймаут простоя для уровня 1 (секунды)",
+    "policy.levels.1.bufferSize": "Размер буфера для уровня 1 (KB)",
+    "policy.levels.2.handshake": "Таймаут рукопожатия для уровня 2 (секунды)",
+    "policy.levels.2.connIdle": "Таймаут простоя для уровня 2 (секунды)",
+    "policy.levels.2.bufferSize": "Размер буфера для уровня 2 (KB)",
+    "log.loglevel": "Уровень логирования (debug, info, warning, error)"
+  },
+  "user_levels": [
+    {
+      "level": 0,
+      "name": "Basic",
+      "description": "Базовые пользователи с ограниченными ресурсами"
+    },
+    {
+      "level": 1, 
+      "name": "Premium",
+      "description": "Премиум пользователи с увеличенными лимитами"
+    },
+    {
+      "level": 2,
+      "name": "Admin",
+      "description": "Администраторы с максимальными привилегиями"
+    }
+  ],
+  "restrictions": [
+    "Поддержка до 3 различных уровней пользователей",
+    "Индивидуальная статистика трафика для каждого пользователя",
+    "Различные лимиты и привилегии по уровням",
+    "Email идентификация для каждого пользователя",
+    "API для управления пользователями и статистикой",
+    "Полное логирование всех подключений"
+  ],
+  "multi_user_config": {
+    "max_users": 3,
+    "user_levels": 3,
+    "individual_stats": true,
+    "email_identification": true,
+    "level_based_limits": true,
+    "api_management": true,
+    "production_ready": true
+  }
+}

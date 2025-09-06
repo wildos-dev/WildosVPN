@@ -1,0 +1,67 @@
+{
+  "categories": [
+    {
+      "id": "basic",
+      "name": "Базовые",
+      "description": "Простые конфигурации для быстрого старта",
+      "icon": "🎯",
+      "protocols": ["vmess", "vless", "trojan", "shadowsocks"],
+      "order": 1,
+      "featured": true
+    },
+    {
+      "id": "websocket",
+      "name": "WebSocket",
+      "description": "Конфигурации с поддержкой CDN и Cloudflare",
+      "icon": "🌐",
+      "protocols": ["vmess", "vless", "trojan", "shadowsocks"],
+      "order": 2,
+      "featured": true
+    },
+    {
+      "id": "grpc",
+      "name": "gRPC",
+      "description": "Высокопроизводительные конфигурации через gRPC",
+      "icon": "📡",
+      "protocols": ["vmess", "vless", "trojan"],
+      "order": 3,
+      "featured": true
+    },
+    {
+      "id": "reality",
+      "name": "Reality",
+      "description": "Максимальная скрытность с технологией Reality",
+      "icon": "🔒",
+      "protocols": ["vless", "vmess"],
+      "order": 4,
+      "featured": true
+    },
+    {
+      "id": "modern",
+      "name": "Современные",
+      "description": "Новые транспортные протоколы",
+      "icon": "⚡",
+      "protocols": ["vless", "trojan", "vmess"],
+      "order": 5,
+      "featured": false
+    },
+    {
+      "id": "production",
+      "name": "Продакшн",
+      "description": "Конфигурации для продуктивного использования",
+      "icon": "🏭",
+      "protocols": ["vless", "trojan", "vmess"],
+      "order": 6,
+      "featured": false
+    },
+    {
+      "id": "special",
+      "name": "Специальные",
+      "description": "Экспертные конфигурации с дополнительными функциями",
+      "icon": "🎯",
+      "protocols": ["vless", "trojan", "vmess"],
+      "order": 7,
+      "featured": false
+    }
+  ]
+}

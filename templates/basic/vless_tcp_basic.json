@@ -1,0 +1,60 @@
+{
+  "id": "vless_tcp_basic",
+  "name": "VLESS TCP Basic",
+  "description": "Базовая конфигурация VLESS через TCP без шифрования",
+  "protocol": "vless",
+  "transport": "tcp",
+  "security": "none",
+  "category": "basic",
+  "complexity": "easy",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 10002,
+  "tags": ["basic", "vless", "tcp", "simple"],
+  "icon": "⚡",
+  "base_config": {
+    "protocol": "vless",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0
+        }
+      ],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "tcpSettings": {
+        "header": {
+          "type": "none"
+        }
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": ["tag", "port"],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tcpSettings.header.type",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "sniffing.enabled": "Включить анализ трафика",
+    "sniffing.destOverride": "Протоколы для анализа"
+  },
+  "restrictions": [
+    "Не поддерживает TLS шифрование",
+    "Подходит только для внутренних сетей",
+    "Не рекомендуется для продакшена"
+  ]
+}

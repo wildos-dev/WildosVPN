@@ -1,0 +1,160 @@
+{
+  "id": "vmess_monitoring",
+  "name": "VMess Monitoring",
+  "description": "VMess с полным мониторингом и метриками для production",
+  "protocol": "vmess",
+  "transport": "tcp",
+  "security": "tls",
+  "category": "vmess",
+  "complexity": "expert",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["monitoring", "vmess", "production", "metrics", "logging"],
+  "icon": "📡",
+  "base_config": {
+    "protocol": "vmess",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "alterId": 0,
+          "email": "user@example.com"
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "tls",
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      },
+      "sockopt": {
+        "tcpKeepAliveInterval": 30,
+        "mark": 255
+      }
+    },
+    "stats": {},
+    "api": {
+      "tag": "api",
+      "services": ["HandlerService", "LoggerService", "StatsService"]
+    },
+    "policy": {
+      "levels": {
+        "0": {
+          "handshake": 4,
+          "connIdle": 300,
+          "uplinkOnly": 2,
+          "downlinkOnly": 5,
+          "statsUserUplink": true,
+          "statsUserDownlink": true,
+          "bufferSize": 512
+        }
+      },
+      "system": {
+        "statsInboundUplink": true,
+        "statsInboundDownlink": true,
+        "statsOutboundUplink": true,
+        "statsOutboundDownlink": true
+      }
+    },
+    "log": {
+      "access": "/var/log/xray/access.log",
+      "error": "/var/log/xray/error.log",
+      "loglevel": "info",
+      "dnsLog": true
+    },
+    "metrics": {
+      "tag": "metrics",
+      "port": 9090
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"],
+      "metadataOnly": false
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "clients.0.email"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.alterId",
+    "clients.0.email",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "policy.levels.0.handshake",
+    "policy.levels.0.connIdle",
+    "policy.levels.0.bufferSize",
+    "log.access",
+    "log.error",
+    "log.loglevel",
+    "log.dnsLog",
+    "metrics.port",
+    "streamSettings.sockopt.tcpKeepAliveInterval",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "stats",
+    "api",
+    "policy",
+    "log",
+    "metrics",
+    "streamSettings.sockopt.mark"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.alterId": "Дополнительный ID (рекомендуется 0)",
+    "clients.0.email": "Email пользователя для идентификации в логах",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "policy.levels.0.handshake": "Таймаут рукопожатия (секунды)",
+    "policy.levels.0.connIdle": "Таймаут простоя соединения (секунды)",
+    "policy.levels.0.bufferSize": "Размер буфера (KB)",
+    "log.access": "Путь к файлу логов доступа",
+    "log.error": "Путь к файлу логов ошибок",
+    "log.loglevel": "Уровень логирования (debug, info, warning, error)",
+    "log.dnsLog": "Логировать DNS запросы",
+    "metrics.port": "Порт для метрик Prometheus",
+    "streamSettings.sockopt.tcpKeepAliveInterval": "Интервал TCP Keep-Alive (секунды)"
+  },
+  "log_levels": [
+    "debug",
+    "info", 
+    "warning",
+    "error",
+    "none"
+  ],
+  "restrictions": [
+    "Включает полную статистику трафика по пользователям",
+    "API для получения метрик и управления",
+    "Логирование всех подключений и ошибок",
+    "Метрики в формате Prometheus на порту 9090",
+    "Email пользователя для идентификации в статистике",
+    "Оптимизированные тайм-ауты для production"
+  ],
+  "monitoring_config": {
+    "stats_enabled": true,
+    "api_enabled": true,
+    "logging_enabled": true,
+    "metrics_enabled": true,
+    "prometheus_port": 9090,
+    "log_rotation": true,
+    "user_tracking": true,
+    "production_ready": true
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "id": "vless_ha_setup",
+  "name": "VLESS HA Setup",
+  "description": "VLESS высокой доступности с автоматическим переключением",
+  "protocol": "vless",
+  "transport": "tcp",
+  "security": "tls",
+  "category": "vless",
+  "complexity": "expert",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["ha", "vless", "production", "failover", "clustering"],
+  "icon": "⚡",
+  "base_config": {
+    "protocol": "vless",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "flow": ""
+        }
+      ],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "tls",
+      "tlsSettings": {
+        "serverName": "example.com",
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      },
+      "sockopt": {
+        "tcpKeepAliveInterval": 15,
+        "tcpKeepAliveIdle": 600,
+        "mark": 255,
+        "tcpFastOpen": true
+      }
+    },
+    "routing": {
+      "domainStrategy": "IPOnDemand",
+      "balancers": [
+        {
+          "tag": "ha-balancer",
+          "selector": ["primary-out", "secondary-out", "backup-out"],
+          "strategy": {
+            "type": "leastPing",
+            "settings": {
+              "healthCheck": {
+                "enabled": true,
+                "interval": "1m",
+                "timeout": "5s"
+              }
+            }
+          }
+        }
+      ],
+      "rules": [
+        {
+          "balancerTag": "ha-balancer",
+          "type": "field",
+          "network": "tcp,udp"
+        }
+      ]
+    },
+    "stats": {},
+    "api": {
+      "tag": "api",
+      "services": ["HandlerService", "LoggerService", "StatsService"]
+    },
+    "policy": {
+      "levels": {
+        "0": {
+          "handshake": 4,
+          "connIdle": 300,
+          "uplinkOnly": 2,
+          "downlinkOnly": 5,
+          "statsUserUplink": true,
+          "statsUserDownlink": true,
+          "bufferSize": 1024
+        }
+      },
+      "system": {
+        "statsInboundUplink": true,
+        "statsInboundDownlink": true,
+        "statsOutboundUplink": true,
+        "statsOutboundDownlink": true
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"],
+      "metadataOnly": false
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.flow",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "routing.balancers.0.selector",
+    "routing.balancers.0.strategy.settings.healthCheck.interval",
+    "routing.balancers.0.strategy.settings.healthCheck.timeout",
+    "policy.levels.0.handshake",
+    "policy.levels.0.connIdle",
+    "policy.levels.0.bufferSize",
+    "streamSettings.sockopt.tcpKeepAliveInterval",
+    "streamSettings.sockopt.tcpKeepAliveIdle",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "routing.balancers",
+    "stats",
+    "api",
+    "policy",
+    "streamSettings.sockopt.mark",
+    "streamSettings.sockopt.tcpFastOpen"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.flow": "XTLS flow (пустое для обычного TCP)",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "routing.balancers.0.selector": "Список серверов для HA кластера",
+    "routing.balancers.0.strategy.settings.healthCheck.interval": "Интервал проверки здоровья серверов",
+    "routing.balancers.0.strategy.settings.healthCheck.timeout": "Таймаут проверки здоровья",
+    "policy.levels.0.handshake": "Таймаут рукопожатия (секунды)",
+    "policy.levels.0.connIdle": "Таймаут простоя соединения (секунды)",
+    "policy.levels.0.bufferSize": "Размер буфера (KB)",
+    "streamSettings.sockopt.tcpKeepAliveInterval": "Интервал TCP Keep-Alive (секунды)",
+    "streamSettings.sockopt.tcpKeepAliveIdle": "Время ожидания TCP Keep-Alive (секунды)"
+  },
+  "restrictions": [
+    "Требует настройку нескольких серверов в кластере",
+    "Автоматическое переключение при отказе сервера",
+    "Мониторинг здоровья серверов каждую минуту",
+    "Полная статистика трафика и производительности",
+    "API для управления и мониторинга",
+    "Оптимизированные сетевые настройки"
+  ],
+  "ha_config": {
+    "min_servers": 3,
+    "health_check_interval": "1m",
+    "failover_timeout": "5s",
+    "load_balancing": "leastPing",
+    "monitoring_enabled": true,
+    "auto_recovery": true,
+    "production_ready": true
+  }
+}

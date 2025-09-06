@@ -1,0 +1,108 @@
+{
+  "id": "vless_httpupgrade_reality",
+  "name": "VLESS HTTPUpgrade + Reality",
+  "description": "VLESS HTTPUpgrade с Reality для максимальной совместимости",
+  "protocol": "vless",
+  "transport": "httpupgrade",
+  "security": "reality",
+  "category": "vless",
+  "complexity": "advanced",
+  "cdn_support": false,
+  "multiplexing": true,
+  "default_port": 80,
+  "tags": ["reality", "vless", "httpupgrade", "compatibility", "modern"],
+  "icon": "⚡",
+  "base_config": {
+    "protocol": "vless",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "flow": ""
+        }
+      ],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "httpupgrade",
+      "security": "reality",
+      "httpupgradeSettings": {
+        "path": "/upgrade",
+        "host": "example.com"
+      },
+      "realitySettings": {
+        "show": false,
+        "dest": "www.microsoft.com:80",
+        "xver": 0,
+        "serverNames": ["www.microsoft.com"],
+        "privateKey": "",
+        "shortIds": [""]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.httpupgradeSettings.path",
+    "streamSettings.httpupgradeSettings.host",
+    "streamSettings.realitySettings.dest",
+    "streamSettings.realitySettings.serverNames.0"
+  ],
+  "auto_gen_fields": [
+    "clients.0.id",
+    "streamSettings.realitySettings.privateKey",
+    "streamSettings.realitySettings.shortIds.0"
+  ],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.flow",
+    "streamSettings.httpupgradeSettings.path",
+    "streamSettings.httpupgradeSettings.host",
+    "streamSettings.realitySettings.dest",
+    "streamSettings.realitySettings.serverNames.0",
+    "streamSettings.realitySettings.show",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.realitySettings.xver",
+    "streamSettings.realitySettings.privateKey",
+    "streamSettings.realitySettings.shortIds",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.flow": "XTLS flow (оставьте пустым для HTTPUpgrade)",
+    "streamSettings.httpupgradeSettings.path": "HTTP путь для upgrade (например: /upgrade, /api/v1)",
+    "streamSettings.httpupgradeSettings.host": "Host заголовок",
+    "streamSettings.realitySettings.dest": "Целевой сайт для маскировки (например: www.microsoft.com:80)",
+    "streamSettings.realitySettings.serverNames.0": "SNI имя (должно совпадать с dest)",
+    "streamSettings.realitySettings.show": "Отображать отладочную информацию",
+    "streamSettings.realitySettings.privateKey": "Приватный ключ Reality (автогенерируется)",
+    "streamSettings.realitySettings.shortIds.0": "Короткий ID (автогенерируется)"
+  },
+  "restrictions": [
+    "НЕ требует SSL сертификат (Reality создает свой)",
+    "Dest сайт должен поддерживать HTTP/1.1",
+    "ServerNames должен совпадать с dest (без порта)",
+    "flow должен быть пустым для HTTPUpgrade",
+    "Отличная совместимость с различными сетями",
+    "Полностью невидимый трафик",
+    "Работает на порту 80 (HTTP)"
+  ],
+  "httpupgrade_config": {
+    "recommended_paths": ["/upgrade", "/api/upgrade", "/v1/upgrade", "/ws-upgrade"],
+    "recommended_destinations": [
+      "www.microsoft.com:80",
+      "www.bing.com:80",
+      "www.yahoo.com:80",
+      "httpbin.org:80"
+    ],
+    "port_80_optimized": true
+  }
+}

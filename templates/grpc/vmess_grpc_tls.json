@@ -1,0 +1,96 @@
+{
+  "id": "vmess_grpc_tls",
+  "name": "VMess gRPC + TLS",
+  "description": "VMess через gRPC с TLS для высокой производительности",
+  "protocol": "vmess",
+  "transport": "grpc",
+  "security": "tls",
+  "category": "vmess",
+  "complexity": "advanced",
+  "cdn_support": true,
+  "multiplexing": true,
+  "default_port": 443,
+  "tags": ["grpc", "vmess", "tls", "performance", "h2"],
+  "icon": "📡",
+  "base_config": {
+    "protocol": "vmess",
+    "settings": {
+      "clients": [
+        {
+          "id": "",
+          "level": 0,
+          "alterId": 0
+        }
+      ]
+    },
+    "streamSettings": {
+      "network": "grpc",
+      "security": "tls",
+      "grpcSettings": {
+        "serviceName": "GunService",
+        "multiMode": false
+      },
+      "tlsSettings": {
+        "serverName": "example.com",
+        "alpn": ["h2"],
+        "certificates": [
+          {
+            "certificateFile": "/path/to/certificate.crt",
+            "keyFile": "/path/to/private.key"
+          }
+        ]
+      }
+    },
+    "sniffing": {
+      "enabled": true,
+      "destOverride": ["http", "tls"]
+    }
+  },
+  "required_fields": [
+    "tag", 
+    "port", 
+    "streamSettings.grpcSettings.serviceName",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile"
+  ],
+  "auto_gen_fields": ["clients.0.id"],
+  "editable_fields": [
+    "clients.0.level",
+    "clients.0.alterId",
+    "streamSettings.grpcSettings.serviceName",
+    "streamSettings.grpcSettings.multiMode",
+    "streamSettings.tlsSettings.serverName",
+    "streamSettings.tlsSettings.certificates.0.certificateFile",
+    "streamSettings.tlsSettings.certificates.0.keyFile",
+    "sniffing.enabled",
+    "sniffing.destOverride"
+  ],
+  "advanced_fields": [
+    "streamSettings.tlsSettings.alpn",
+    "streamSettings.tlsSettings.allowInsecure",
+    "streamSettings.grpcSettings.authority",
+    "streamSettings.sockopt"
+  ],
+  "field_descriptions": {
+    "clients.0.level": "Уровень пользователя (0-255)",
+    "clients.0.alterId": "Дополнительный ID (рекомендуется 0)",
+    "streamSettings.grpcSettings.serviceName": "Имя gRPC сервиса (например: GunService, TunService)",
+    "streamSettings.grpcSettings.multiMode": "Режим множественных потоков gRPC",
+    "streamSettings.tlsSettings.serverName": "Доменное имя для TLS",
+    "streamSettings.tlsSettings.certificates.0.certificateFile": "Путь к SSL сертификату",
+    "streamSettings.tlsSettings.certificates.0.keyFile": "Путь к приватному ключу"
+  },
+  "restrictions": [
+    "Требует HTTP/2 поддержку",
+    "Требует валидный SSL сертификат",
+    "serviceName должен быть уникальным",
+    "Отличная производительность благодаря HTTP/2",
+    "Работает с CDN поддерживающими gRPC"
+  ],
+  "grpc_config": {
+    "recommended_service_names": ["GunService", "TunService", "VlessService", "ApiService"],
+    "http2_required": true,
+    "alpn_required": ["h2"]
+  }
+}
