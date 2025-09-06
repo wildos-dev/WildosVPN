@@ -26,7 +26,7 @@ WildosVPN is a powerful VPN management panel for Xray-core with SSL support via 
 #### From Git Repository (Recommended)
 ```bash
 # Download and run installer
-sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wildos-dev/WildosVPN/main/install-from-git.sh)"
+sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wildos-dev/WildosVPN/main/wildosvpn.sh)"
 ```
 
 #### Local Installation
@@ -35,8 +35,8 @@ sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wildos-dev/WildosVPN/
 git clone https://github.com/wildos-dev/WildosVPN.git
 cd WildosVPN
 
-# Run local installer
-sudo bash install-local.sh
+# Run installer
+sudo bash wildosvpn.sh install
 ```
 
 ### Management Commands
@@ -55,14 +55,17 @@ wildosvpn script-update # Update management script
 
 ### Update System
 ```bash
-# Interactive update with Git/Local options
-sudo bash quick-update.sh
+# Update WildosVPN
+wildosvpn update
+
+# Update management script
+wildosvpn script-update
 ```
 
 ### Uninstall
 ```bash
 # Complete removal with backup option
-sudo bash uninstall.sh
+wildosvpn uninstall
 ```
 
 ### Requirements
@@ -98,7 +101,7 @@ WildosVPN - это мощная панель управления VPN для Xra
 #### С Git репозитория (Рекомендуется)
 ```bash
 # Скачать и запустить установщик
-sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wildos-dev/WildosVPN/main/install-from-git.sh)"
+sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wildos-dev/WildosVPN/main/wildosvpn.sh)"
 ```
 
 #### Локальная установка
@@ -107,8 +110,8 @@ sudo bash -c "$(curl -sL https://raw.githubusercontent.com/wildos-dev/WildosVPN/
 git clone https://github.com/wildos-dev/WildosVPN.git
 cd WildosVPN
 
-# Запустить локальный установщик
-sudo bash install-local.sh
+# Запустить установщик
+sudo bash wildosvpn.sh install
 ```
 
 ### Команды управления
@@ -127,14 +130,17 @@ wildosvpn script-update # Обновление скрипта управлени
 
 ### Система обновлений
 ```bash
-# Интерактивное обновление с выбором Git/Локально
-sudo bash quick-update.sh
+# Обновление WildosVPN
+wildosvpn update
+
+# Обновление скрипта управления
+wildosvpn script-update
 ```
 
 ### Удаление
 ```bash
 # Полное удаление с возможностью резервного копирования
-sudo bash uninstall.sh
+wildosvpn uninstall
 ```
 
 ### Требования
