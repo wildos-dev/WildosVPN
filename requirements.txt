@@ -43,7 +43,7 @@ websocket-client==1.7.0
 websockets==12.0
 click
 cryptography
-decouple
+python-decouple
 fastapi
 pymysql
 python-decouple
