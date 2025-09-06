@@ -1,5 +1,7 @@
-from decouple import config
+from decouple import Config
 from dotenv import load_dotenv
+
+config = Config()
 
 load_dotenv()
 

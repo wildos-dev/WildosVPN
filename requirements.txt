@@ -46,7 +46,6 @@ cryptography
 python-decouple
 fastapi
 pymysql
-python-decouple
 python-dotenv
 sqlalchemy
 uvicorn
