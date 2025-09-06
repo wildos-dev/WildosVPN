@@ -1,38 +1,38 @@
 import os
-from python_decouple import config as decouple_config
+from decouple import config as decouple_config
 
 def config(key, default=None, cast=None):
     """Полная замена python-decouple с поддержкой всех функций"""
     value = os.getenv(key, default)
-    
+
     # Если значение не задано, возвращаем default
     if value is None:
         return default
-        
-    # Если cast не задан, возвращаем как есть  
+
+    # Если cast не задан, возвращаем как есть
     if cast is None:
         return value
-    
+
     # Если значение равно default, не обрабатываем
     if str(value) == str(default):
         return default
-        
+
     try:
         # Специальная обработка для bool
         if cast == bool:
             return str(value).lower() in ('true', '1', 'yes', 'on', 't', 'y')
-        
+
         # Специальная обработка для строк (может быть пустая строка)
         if cast == str:
             return str(value)
-            
+
         # Для lambda функций и других callable
         if callable(cast):
             return cast(value)
-            
+
         # Стандартное приведение типов
         return cast(value)
-        
+
     except (ValueError, TypeError, AttributeError):
         return default
 
