@@ -193,7 +193,7 @@ detect_compose() {
     fi
 }
 
-install_wildosvpn_script() {"
+install_wildosvpn_script() {
     FETCH_REPO="wildos-dev/WildosVPN"
     SCRIPT_URL="https://github.com/$FETCH_REPO/raw/main/wildosvpn.sh"
     colorized_echo blue "Установка скрипта wildosvpn"
@@ -980,14 +980,7 @@ is_wildosvpn_installed() {
     fi
 }
 
-# Обновление скрипта
-install_wildosvpn_script() {
-    FETCH_REPO="wildos-dev/WildosVPN"
-    SCRIPT_URL="https://github.com/$FETCH_REPO/raw/main/wildosvpn.sh"
-    colorized_echo blue "Обновление скрипта wildosvpn"
-    curl -sSL $SCRIPT_URL | install -m 755 /dev/stdin /usr/local/bin/wildosvpn
-    colorized_echo green "Скрипт wildosvpn успешно обновлен"
-}
+# Обновление скрипта выполняется через основную функцию install_wildosvpn_script
 
 # Функция запуска сервисов
 start_services() {
