@@ -50,3 +50,5 @@ python-decouple
 python-dotenv
 sqlalchemy
 uvicorn
+decouple
+python-decouple
