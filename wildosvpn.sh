@@ -61,8 +61,6 @@ log_action() {
 
 # Проверка системных требований
 check_system_requirements() {
-    # Создаем директорию для логов заранее
-    mkdir -p "$APP_DIR" 2>/dev/null || true
     colorized_echo blue "Проверка системных требований"
     
     # Проверка RAM (минимум 512MB)
@@ -883,9 +881,6 @@ run_installation() {
     colorized_echo blue "  Интерактивный установщик WildosVPN  "
     colorized_echo blue "    с полной настройкой SSL через Caddy       "
     colorized_echo blue "=============================================="
-    
-    # Создаем базовую директорию для логов
-    mkdir -p "$APP_DIR" 2>/dev/null || true
     
     # Проверка прав root
     check_running_as_root
