@@ -372,7 +372,7 @@ setup_backup_service() {
         fi
     done
     
-    echo "Выберите интервал резервного копирования:"
+    echo "Выберите интервал резервного копирования конфигурации:"
     echo "1. Каждые 6 часов"
     echo "2. Каждые 12 часов"
     echo "3. Ежедневно"
@@ -389,7 +389,27 @@ setup_backup_service() {
         esac
     done
     
+    # Настройка cron задачи для автоматического бекапа конфигов
+    setup_config_backup_cron
+    
     colorized_echo green "Служба резервного копирования настроена"
+}
+
+# Настройка cron задачи для автоматического бекапа конфигов
+setup_config_backup_cron() {
+    if [ -z "$BACKUP_CRON_SCHEDULE" ]; then
+        return
+    fi
+    
+    colorized_echo blue "Настройка автоматического бекапа конфигурации"
+    
+    # Удаление старых cron задач WildosVPN
+    crontab -l 2>/dev/null | grep -v "wildosvpn backup-config" | crontab - 2>/dev/null || true
+    
+    # Добавление новой cron задачи
+    (crontab -l 2>/dev/null; echo "$BACKUP_CRON_SCHEDULE /usr/local/bin/wildosvpn backup-config >/dev/null 2>&1") | crontab -
+    
+    colorized_echo green "Автоматический бекап конфигурации настроен с расписанием: $BACKUP_CRON_SCHEDULE"
 }
 
 # Настройка MySQL
@@ -1171,7 +1191,7 @@ update_wildosvpn() {
     colorized_echo blue "Обновление WildosVPN..."
     
     # Создание резервной копии перед обновлением
-    create_backup
+    create_full_backup
     
     cd "$APP_DIR"
     detect_compose
@@ -1249,7 +1269,7 @@ uninstall_wildosvpn() {
     
     # Создание резервной копии перед удалением
     colorized_echo blue "Создание резервной копии перед удалением..."
-    create_backup
+    create_full_backup
     
     cd "$APP_DIR"
     detect_compose
@@ -1327,16 +1347,17 @@ show_interactive_menu() {
         echo "  4. restart       - Перезапустить сервисы"
         echo "  5. status        - Показать статус сервисов"
         echo "  6. logs          - Показать логи"
-        echo "  7. backup        - Создать резервную копию"
-        echo "  8. update        - Обновить WildosVPN"
-        echo "  9. admin         - Управление администраторами"
-        echo " 10. uninstall     - Удалить WildosVPN"
-        echo " 11. script-update - Обновить этот скрипт"
+        echo "  7. backup-config - Автоматический бекап конфигов"
+        echo "  8. backup-full   - Полный ручной бекап"
+        echo "  9. update        - Обновить WildosVPN"
+        echo " 10. admin         - Управление администраторами"
+        echo " 11. uninstall     - Удалить WildosVPN"
+        echo " 12. script-update - Обновить этот скрипт"
         echo "  0. exit          - Выход"
         echo ""
         colorized_echo blue "=============================================="
         echo ""
-        read -p "Выберите команду (0-11 или название): " choice
+        read -p "Выберите команду (0-12 или название): " choice
         
         case "$choice" in
             "1"|"install")
@@ -1361,23 +1382,27 @@ show_interactive_menu() {
             "6"|"logs")
                 show_logs
                 ;;
-            "7"|"backup")
+            "7"|"backup-config")
                 check_running_as_root
-                create_backup
+                create_config_backup
                 ;;
-            "8"|"update")
+            "8"|"backup-full")
+                check_running_as_root
+                create_full_backup
+                ;;
+            "9"|"update")
                 check_running_as_root
                 update_wildosvpn
                 ;;
-            "9"|"admin")
+            "10"|"admin")
                 check_running_as_root
                 admin_management
                 ;;
-            "10"|"uninstall")
+            "11"|"uninstall")
                 check_running_as_root
                 uninstall_wildosvpn
                 ;;
-            "11"|"script-update")
+            "12"|"script-update")
                 check_running_as_root
                 install_wildosvpn_script
                 ;;
@@ -1434,9 +1459,18 @@ main() {
         "logs")
             show_logs
             ;;
-        "backup")
+        "backup-config")
             check_running_as_root
-            create_backup
+            create_config_backup
+            ;;
+        "backup-full")
+            check_running_as_root
+            create_full_backup
+            ;;
+        "backup")
+            # Обратная совместимость - по умолчанию создаем полный бекап
+            check_running_as_root
+            create_full_backup
             ;;
         "update")
             check_running_as_root
@@ -1464,6 +1498,8 @@ main() {
 
 # Функция отправки резервной копии в Telegram (из оригинального скрипта)
 send_backup_to_telegram() {
+    local backup_file_path="${1:-}"
+    
     if [ -f "$ENV_FILE" ]; then
         while IFS='=' read -r key value; do
             if [[ -z "$key" || "$key" =~ ^# ]]; then
@@ -1483,8 +1519,16 @@ send_backup_to_telegram() {
     fi
 
     local server_ip=$(curl -s ifconfig.me || echo "Unknown IP")
-    local latest_backup=$(ls -t "$APP_DIR/backup" | head -n 1)
-    local backup_path="$APP_DIR/backup/$latest_backup"
+    
+    # Использовать переданный путь или найти последний бекап
+    if [ -n "$backup_file_path" ] && [ -f "$backup_file_path" ]; then
+        local backup_path="$backup_file_path"
+        local backup_filename=$(basename "$backup_path")
+    else
+        local latest_backup=$(ls -t "$BACKUP_DIR" | head -n 1)
+        local backup_path="$BACKUP_DIR/$latest_backup"
+        local backup_filename="$latest_backup"
+    fi
 
     if [ ! -f "$backup_path" ]; then
         colorized_echo red "Резервные копии не найдены"
@@ -1492,7 +1536,7 @@ send_backup_to_telegram() {
     fi
 
     local backup_time=$(date "+%Y-%m-%d %H:%M:%S %Z")
-    local caption="📦 *WildosVPN Backup*\\n🌐 *Server IP*: \`${server_ip}\`\\n📁 *File*: \`${latest_backup}\`\\n⏰ *Time*: \`${backup_time}\`"
+    local caption="📦 *WildosVPN Backup*\\n🌐 *Server IP*: \`${server_ip}\`\\n📁 *File*: \`${backup_filename}\`\\n⏰ *Time*: \`${backup_time}\`"
     
     curl -s -F chat_id="$BACKUP_TELEGRAM_CHAT_ID" \
         -F document=@"$backup_path" \
