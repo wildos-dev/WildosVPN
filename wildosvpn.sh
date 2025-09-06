@@ -53,6 +53,8 @@ colorized_echo() {
 log_action() {
     local message="$1"
     local log_file="$APP_DIR/install.log"
+    # Создаем директорию если она не существует
+    mkdir -p "$(dirname "$log_file")" 2>/dev/null || true
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $message" >> "$log_file"
     colorized_echo blue "$message"
 }
