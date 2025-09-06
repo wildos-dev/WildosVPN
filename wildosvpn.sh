@@ -1218,6 +1218,77 @@ is_running_in_docker() {
     [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup 2>/dev/null
 }
 
+# Проверка доступности Docker Compose
+check_docker_compose_available() {
+    if ! command -v docker >/dev/null 2>&1; then
+        colorized_echo red "Docker не установлен или недоступен"
+        return 1
+    fi
+    
+    if ! docker compose version >/dev/null 2>&1 && ! docker-compose version >/dev/null 2>&1; then
+        colorized_echo red "Docker Compose не установлен или недоступен"
+        return 1
+    fi
+    
+    return 0
+}
+
+# Диагностика состояния Docker контейнеров
+diagnose_docker_state() {
+    colorized_echo blue "Диагностика состояния Docker контейнеров..."
+    
+    if ! check_docker_compose_available; then
+        return 1
+    fi
+    
+    cd "$APP_DIR" 2>/dev/null || {
+        colorized_echo red "Директория приложения $APP_DIR не найдена"
+        return 1
+    }
+    
+    detect_compose
+    
+    # Проверка конфигурации docker-compose
+    if [ -f "$COMPOSE_FILE" ]; then
+        colorized_echo green "Файл docker-compose.yml найден"
+        if $COMPOSE config >/dev/null 2>&1; then
+            colorized_echo green "Конфигурация docker-compose валидна"
+        else
+            colorized_echo red "Ошибка в конфигурации docker-compose.yml"
+            return 1
+        fi
+    else
+        colorized_echo red "Файл docker-compose.yml не найден в $APP_DIR"
+        return 1
+    fi
+    
+    # Проверка статуса контейнеров
+    if $COMPOSE ps >/dev/null 2>&1; then
+        local container_status=$($COMPOSE ps --format "table {{.Service}}\t{{.State}}\t{{.Status}}")
+        echo ""
+        colorized_echo blue "Статус контейнеров:"
+        echo "$container_status"
+        echo ""
+    else
+        colorized_echo yellow "Не удалось получить статус контейнеров"
+    fi
+    
+    # Проверка наличия .env файла
+    if [ -f "$ENV_FILE" ]; then
+        colorized_echo green "Файл .env найден на хосте"
+    else
+        colorized_echo yellow "Файл .env не найден на хосте: $ENV_FILE"
+        if get_config_from_docker 2>/dev/null; then
+            colorized_echo green "Конфигурация доступна из контейнера"
+            rm -f "/tmp/.env.wildosvpn.tmp"
+        else
+            colorized_echo red "Конфигурация недоступна"
+        fi
+    fi
+    
+    return 0
+}
+
 # Получение конфигурации из Docker контейнера
 get_config_from_docker() {
     colorized_echo blue "Извлечение конфигурации из Docker контейнера..."
@@ -1434,13 +1505,14 @@ show_interactive_menu() {
         echo "  8. backup-full   - Полный ручной бекап"
         echo "  9. update        - Обновить WildosVPN"
         echo " 10. admin         - Управление администраторами"
-        echo " 11. uninstall     - Удалить WildosVPN"
-        echo " 12. script-update - Обновить этот скрипт"
+        echo " 11. diagnose      - Диагностика Docker контейнеров"
+        echo " 12. uninstall     - Удалить WildosVPN"
+        echo " 13. script-update - Обновить этот скрипт"
         echo "  0. exit          - Выход"
         echo ""
         colorized_echo blue "=============================================="
         echo ""
-        read -p "Выберите команду (0-12 или название): " choice
+        read -p "Выберите команду (0-13 или название): " choice
         
         case "$choice" in
             "1"|"install")
@@ -1481,11 +1553,14 @@ show_interactive_menu() {
                 check_running_as_root
                 admin_management
                 ;;
-            "11"|"uninstall")
+            "11"|"diagnose")
+                diagnose_docker_state
+                ;;
+            "12"|"uninstall")
                 check_running_as_root
                 uninstall_wildosvpn
                 ;;
-            "12"|"script-update")
+            "13"|"script-update")
                 check_running_as_root
                 install_wildosvpn_script
                 ;;
@@ -1562,6 +1637,9 @@ main() {
         "admin")
             check_running_as_root
             admin_management
+            ;;
+        "diagnose")
+            diagnose_docker_state
             ;;
         "uninstall")
             check_running_as_root
