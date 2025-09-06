@@ -11,6 +11,7 @@ if [ -z "$APP_NAME" ]; then
 fi
 APP_DIR="$INSTALL_DIR/$APP_NAME"
 DATA_DIR="/var/lib/$APP_NAME"
+BACKUP_DIR="/var/backups/$APP_NAME"
 COMPOSE_FILE="$APP_DIR/docker-compose.yml"
 ENV_FILE="$APP_DIR/.env"
 
@@ -576,10 +577,12 @@ create_directories() {
     mkdir -p "$DATA_DIR/templates/"{basic,websocket,grpc,reality,modern,production,special}
     mkdir -p "$DATA_DIR/logs"
     mkdir -p "$DATA_DIR/certs"
+    mkdir -p "$BACKUP_DIR"
     
     # Установка правильных разрешений
     chown -R 1000:1000 "$DATA_DIR"
     chmod -R 755 "$DATA_DIR"
+    chmod -R 755 "$BACKUP_DIR"
     
     colorized_echo green "Структура директорий создана"
 }
@@ -1075,33 +1078,86 @@ show_status() {
     $COMPOSE ps
 }
 
-# Функция создания резервной копии
-create_backup() {
+# Функция создания резервной копии конфигурации (автоматический бекап)
+create_config_backup() {
     if ! is_wildosvpn_installed; then
         colorized_echo red "WildosVPN не установлен"
         exit 1
     fi
     
-    colorized_echo blue "Создание резервной копии WildosVPN..."
+    colorized_echo blue "Создание резервной копии конфигурации..."
     
     # Создание директории для резервных копий
-    mkdir -p "$APP_DIR/backup"
+    mkdir -p "$BACKUP_DIR"
+    
+    # Создание архива только с конфигурационными файлами
+    BACKUP_FILE="$BACKUP_DIR/wildosvpn-config-backup-$(date +%Y%m%d_%H%M%S).tar.gz"
+    
+    # Подготовка временной директории для конфигов
+    TEMP_DIR="/tmp/wildosvpn-config-$(date +%s)"
+    mkdir -p "$TEMP_DIR"
+    
+    # Копирование конфигурационных файлов
+    if [ -f "$ENV_FILE" ]; then
+        cp "$ENV_FILE" "$TEMP_DIR/"
+    fi
+    
+    if [ -f "$APP_DIR/Caddyfile" ]; then
+        cp "$APP_DIR/Caddyfile" "$TEMP_DIR/"
+    fi
+    
+    if [ -f "$COMPOSE_FILE" ]; then
+        cp "$COMPOSE_FILE" "$TEMP_DIR/"
+    fi
+    
+    # Копирование пользовательских шаблонов
+    if [ -d "$DATA_DIR/templates" ]; then
+        cp -r "$DATA_DIR/templates" "$TEMP_DIR/"
+    fi
     
     # Создание архива
-    BACKUP_FILE="$APP_DIR/backup/wildosvpn-backup-$(date +%Y%m%d_%H%M%S).tar.gz"
+    cd "$TEMP_DIR"
+    tar -czf "$BACKUP_FILE" . 2>/dev/null || true
     
-    cd "$INSTALL_DIR"
-    tar -czf "$BACKUP_FILE" \
-        --exclude="$APP_NAME/backup" \
-        --exclude="$APP_NAME/logs" \
-        "$APP_NAME" \
-        "../var/lib/$APP_NAME" 2>/dev/null || true
+    # Очистка временных файлов
+    rm -rf "$TEMP_DIR"
     
-    colorized_echo green "Резервная копия создана: $BACKUP_FILE"
+    colorized_echo green "Резервная копия конфигурации создана: $BACKUP_FILE"
     
     # Отправка в Telegram если настроено
     if [ -f "$ENV_FILE" ] && grep -q "BACKUP_SERVICE_ENABLED=true" "$ENV_FILE"; then
-        send_backup_to_telegram
+        send_backup_to_telegram "$BACKUP_FILE"
+    fi
+}
+
+# Функция создания полной резервной копии (ручной бекап)
+create_full_backup() {
+    if ! is_wildosvpn_installed; then
+        colorized_echo red "WildosVPN не установлен"
+        exit 1
+    fi
+    
+    colorized_echo blue "Создание полной резервной копии WildosVPN..."
+    
+    # Создание директории для резервных копий
+    mkdir -p "$BACKUP_DIR"
+    
+    # Создание полного архива
+    BACKUP_FILE="$BACKUP_DIR/wildosvpn-full-backup-$(date +%Y%m%d_%H%M%S).tar.gz"
+    
+    cd "$INSTALL_DIR"
+    tar -czf "$BACKUP_FILE" \
+        --exclude="$APP_NAME/logs" \
+        --exclude="*/logs" \
+        "$APP_NAME" \
+        "../var/lib/$APP_NAME" 2>/dev/null || true
+    
+    colorized_echo green "Полная резервная копия создана: $BACKUP_FILE"
+    
+    # Показать размер архива
+    if [ -f "$BACKUP_FILE" ]; then
+        BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+        colorized_echo cyan "Размер архива: $BACKUP_SIZE"
     fi
 }
 
