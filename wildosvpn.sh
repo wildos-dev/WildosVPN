@@ -1117,9 +1117,15 @@ create_config_backup() {
     TEMP_DIR="/tmp/wildosvpn-config-$(date +%s)"
     mkdir -p "$TEMP_DIR"
     
-    # Копирование конфигурационных файлов
+    cd "$APP_DIR"
+    detect_compose
+    
+    # Копирование конфигурационных файлов с учетом Docker окружения
     if [ -f "$ENV_FILE" ]; then
         cp "$ENV_FILE" "$TEMP_DIR/"
+    elif get_config_from_docker 2>/dev/null && [ -f "/tmp/.env.wildosvpn.tmp" ]; then
+        cp "/tmp/.env.wildosvpn.tmp" "$TEMP_DIR/.env"
+        rm -f "/tmp/.env.wildosvpn.tmp"
     fi
     
     if [ -f "$APP_DIR/Caddyfile" ]; then
@@ -1133,6 +1139,15 @@ create_config_backup() {
     # Копирование пользовательских шаблонов
     if [ -d "$DATA_DIR/templates" ]; then
         cp -r "$DATA_DIR/templates" "$TEMP_DIR/"
+    elif [ -d "$APP_DIR/templates" ]; then
+        # В случае если шаблоны находятся в директории приложения
+        cp -r "$APP_DIR/templates" "$TEMP_DIR/"
+    fi
+    
+    # Попробуем извлечь дополнительные конфигурационные файлы из контейнера
+    if ! [ -f "$TEMP_DIR/.env" ] && $COMPOSE ps wildosvpn >/dev/null 2>&1; then
+        colorized_echo blue "Попытка извлечь дополнительные конфигурации из контейнера..."
+        $COMPOSE cp wildosvpn:/var/lib/wildosvpn/. "$TEMP_DIR/container_data/" 2>/dev/null || true
     fi
     
     # Создание архива
@@ -1540,21 +1555,43 @@ main() {
 send_backup_to_telegram() {
     local backup_file_path="${1:-}"
     
+    # Попытка загрузить переменные окружения из .env файла
     if [ -f "$ENV_FILE" ]; then
         while IFS='=' read -r key value; do
             if [[ -z "$key" || "$key" =~ ^# ]]; then
                 continue
             fi
             key=$(echo "$key" | xargs)
-            value=$(echo "$value" | xargs)
+            value=$(echo "$value" | xargs | sed 's/^"\(.*\)"$/\1/')
             if [[ "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
                 export "$key"="$value"
             fi
         done < "$ENV_FILE"
+    elif [ -d "$APP_DIR" ]; then
+        # Попытка получить переменные из запущенного контейнера
+        cd "$APP_DIR"
+        detect_compose
+        if $COMPOSE ps wildosvpn >/dev/null 2>&1; then
+            # Извлекаем переменные окружения для Telegram
+            local telegram_vars=$($COMPOSE exec -T wildosvpn printenv | grep -E "^(BACKUP_SERVICE_ENABLED|BACKUP_TELEGRAM_BOT_KEY|BACKUP_TELEGRAM_CHAT_ID)=" 2>/dev/null || echo "")
+            if [ -n "$telegram_vars" ]; then
+                while IFS='=' read -r key value; do
+                    if [[ -n "$key" && -n "$value" ]]; then
+                        export "$key"="$value"
+                    fi
+                done <<< "$telegram_vars"
+            fi
+        fi
     fi
 
+    # Проверка настроек резервного копирования
     if [ "$BACKUP_SERVICE_ENABLED" != "true" ]; then
         colorized_echo yellow "Служба резервного копирования не включена"
+        return
+    fi
+    
+    if [ -z "$BACKUP_TELEGRAM_BOT_KEY" ] || [ -z "$BACKUP_TELEGRAM_CHAT_ID" ]; then
+        colorized_echo red "Отсутствуют настройки Telegram для отправки резервных копий"
         return
     fi
 
