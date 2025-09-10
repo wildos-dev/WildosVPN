@@ -1,0 +1,1 @@
+import{aD as c,aC as a,r as n}from"./index-DPGZIZMG.js";const i=({children:o})=>{const{isSudo:s,isLoggedIn:e}=c(),t=a();return n.useEffect(()=>{(async()=>{(!await e()||!s())&&t({to:"/login"})})()},[s,e,t]),s?o:null};export{i as S};
